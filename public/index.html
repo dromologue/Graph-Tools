@@ -258,25 +258,6 @@
                         <input type="file" id="matrixFile" name="matrix" accept=".csv,.json,.txt" style="display: none;" onchange="handleFileSelect(this)">
                     </div>
                     
-                    <div class="form-row" style="margin-top: 20px;">
-                        <div class="form-group">
-                            <label for="vertices">Vertex Labels (comma-separated):</label>
-                            <input type="text" id="vertices" name="vertices" placeholder="A,B,C,D or Alice,Bob,Carol,David">
-                        </div>
-                        <div class="form-group">
-                            <label for="operation">Graph Operation:</label>
-                            <select id="operation" name="operation">
-                                <option value="">Basic Analysis</option>
-                                <option value="dfs">Depth-First Search (DFS)</option>
-                                <option value="bfs">Breadth-First Search (BFS)</option>
-                                <option value="neighbors">Show Neighbors</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="startVertex">Start Vertex (for DFS/BFS/Neighbors):</label>
-                            <input type="text" id="startVertex" name="startVertex" placeholder="A or Alice">
-                        </div>
-                    </div>
                     
                     <div style="text-align: center; margin-top: 20px;">
                         <button type="submit">Analyze Graph</button>
@@ -327,9 +308,6 @@
             
             const formData = new FormData();
             formData.append('matrix', selectedFile);
-            formData.append('vertices', document.getElementById('vertices').value);
-            formData.append('operation', document.getElementById('operation').value);
-            formData.append('startVertex', document.getElementById('startVertex').value);
             
             showLoading();
             
@@ -370,7 +348,6 @@
                 
                 if (result.success) {
                     // Update form with sample data
-                    document.getElementById('vertices').value = result.vertices.join(',');
                     document.getElementById('uploadText').innerHTML = 
                         `<strong>${type} sample loaded</strong><br><span>Ready for analysis</span>`;
                     selectedFile = 'sample'; // Flag that we have sample data
