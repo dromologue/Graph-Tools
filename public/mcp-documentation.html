@@ -164,14 +164,16 @@
         }
         
         .code-block {
-            background: #000;
-            color: #dcecf5;
-            padding: 20px;
+            background: #ffffff;
+            color: #000000;
+            padding: 30px;
             border: 3px solid #dcecf5;
             overflow-x: auto;
-            margin: 15px 0;
-            font-family: 'VT323', monospace;
-            font-size: 16px;
+            margin: 20px 0;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            line-height: 2.0;
+            white-space: pre-line;
         }
         
         .installation-steps {
@@ -254,11 +256,12 @@
         }
         
         code {
-            background: #000;
-            color: #dcecf5;
-            padding: 2px 4px;
+            background: #ffffff;
+            color: #000000;
+            padding: 4px 8px;
             border: 1px solid #dcecf5;
-            font-family: 'VT323', monospace;
+            font-family: Arial, sans-serif;
+            font-size: 13px;
         }
     </style>
 </head>
@@ -288,24 +291,42 @@
                 <h2>SERVER SETUP</h2>
                 
                 <h3>INSTALLATION</h3>
-                <div class="code-block">git clone https://github.com/yourusername/Graph-Tools.git
+                <div class="code-block">Step 1: Clone the repository
+git clone https://github.com/yourusername/Graph-Tools.git
+
+Step 2: Navigate to the MCP server directory
 cd Graph-Tools/mcp-graph-server
+
+Step 3: Install dependencies
 npm install</div>
                 
                 <h3>MCP CLIENT CONFIGURATION</h3>
                 <p>Add to your Claude Desktop config:</p>
-                <div class="code-block">{
+                <div class="code-block">Configuration for Claude Desktop:
+{
   "mcpServers": {
     "graph-server": {
       "command": "node",
-      "args": ["/path/to/Graph-Tools/mcp-graph-server/index.js"],
-      "env": {}
+      "args": [
+        "/path/to/Graph-Tools/mcp-graph-server/api-server.js"
+      ],
+      "env": {
+        "SERVER_MODE": "mcp"
+      }
     }
   }
 }</div>
 
                 <h3>DIRECT EXECUTION</h3>
-                <div class="code-block">node /path/to/Graph-Tools/mcp-graph-server/index.js</div>
+                <div class="code-block">Option 1: Run as MCP server (stdio mode)
+SERVER_MODE=mcp node api-server.js
+
+Option 2: Run as HTTP API server
+SERVER_MODE=http node api-server.js
+
+Option 3: Use npm scripts
+npm run mcp
+npm run api</div>
             </div>
 
             <div class="section">
@@ -317,21 +338,33 @@ npm install</div>
                         Extracts relationships from structured data and generates graph visualizations
                     </div>
                     
-                    <h3>REQUEST FORMAT</h3>
-                    <div class="code-block">{
-  "method": "tools/call",
-  "params": {
-    "name": "analyze_relationships",
-    "arguments": {
-      "data": [
-        {"id": "A", "connects_to": ["B", "C"]},
-        {"id": "B", "connects_to": ["C"]},
-        {"id": "C", "connects_to": []}
-      ],
-      "relationship_fields": ["connects_to"],
-      "node_label_field": "id"
+                    <h3>HTTP REQUEST EXAMPLE</h3>
+                    <div class="code-block">Method: POST
+URL: http://localhost:3001/api/analyze-relationships
+Content-Type: application/json
+
+Request Body:
+{
+  "data": [
+    {
+      "id": "Alice",
+      "friends": ["Bob", "Carol"]
+    },
+    {
+      "id": "Bob",
+      "friends": ["Alice", "David"]
+    },
+    {
+      "id": "Carol",
+      "friends": ["Alice"]
+    },
+    {
+      "id": "David",
+      "friends": ["Bob"]
     }
-  }
+  ],
+  "relationship_fields": ["friends"],
+  "node_label_field": "id"
 }</div>
 
                     <h3>PARAMETERS</h3>
@@ -353,13 +386,49 @@ npm install</div>
                         <div>Field to use for node identification (default: "id")</div>
                     </div>
 
-                    <h3>RESPONSE</h3>
-                    <div class="code-block">{
-  "content": [{
-    "type": "text",
-    "text": "Graph Analysis Complete!\n\nVertices: 3\nRelationships: 3\nFiles Generated:\n- matrix_1234567890.csv\n- visualization_1234567890.html"
-  }]
+                    <h3>HTTP RESPONSE</h3>
+                    <div class="code-block">Status: 200 OK
+Content-Type: application/json
+
+Response Body:
+{
+  "success": true,
+  "data": "Graph Analysis Complete!
+
+Vertices found: 4
+Relationships found: 6
+Graph density: 0.500
+
+Files Generated:
+- matrix_1642781234567.csv
+- visualization_1642781234567.html
+- graph_data_1642781234567.json",
+  "timestamp": "2025-01-21T10:30:00.000Z"
 }</div>
+
+                    <h3>CURL COMMAND EXAMPLE</h3>
+                    <div class="code-block">Step 1: Open terminal or command prompt
+
+Step 2: Run this curl command
+curl -X POST http://localhost:3001/api/analyze-relationships
+
+Step 3: Add the Content-Type header
+curl -X POST http://localhost:3001/api/analyze-relationships \
+  -H "Content-Type: application/json"
+
+Step 4: Add the data payload
+curl -X POST http://localhost:3001/api/analyze-relationships \
+  -H "Content-Type: application/json" \
+  -d '{
+    "data": [
+      {"id": "Alice", "friends": ["Bob", "Carol"]},
+      {"id": "Bob", "friends": ["Alice", "David"]},
+      {"id": "Carol", "friends": ["Alice"]},
+      {"id": "David", "friends": ["Bob"]}
+    ],
+    "relationship_fields": ["friends"],
+    "node_label_field": "id"
+  }'</div>
                 </div>
 
                 <div class="tool-card">
@@ -368,19 +437,31 @@ npm install</div>
                         Creates adjacency matrix from predefined relationship pairs
                     </div>
                     
-                    <h3>REQUEST FORMAT</h3>
-                    <div class="code-block">{
-  "method": "tools/call",
-  "params": {
-    "name": "create_adjacency_matrix",
-    "arguments": {
-      "relationships": [
-        {"from": "A", "to": "B", "weight": 1},
-        {"from": "B", "to": "C", "weight": 2}
-      ],
-      "vertices": ["A", "B", "C"]
+                    <h3>HTTP REQUEST EXAMPLE</h3>
+                    <div class="code-block">Method: POST
+URL: http://localhost:3001/api/create-adjacency-matrix
+Content-Type: application/json
+
+Request Body:
+{
+  "relationships": [
+    {
+      "from": "Alice",
+      "to": "Bob",
+      "weight": 1
+    },
+    {
+      "from": "Bob",
+      "to": "Carol",
+      "weight": 2
+    },
+    {
+      "from": "Carol",
+      "to": "Alice",
+      "weight": 1
     }
-  }
+  ],
+  "vertices": ["Alice", "Bob", "Carol"]
 }</div>
 
                     <h3>PARAMETERS</h3>
@@ -532,56 +613,92 @@ npm install</div>
                 </ul>
 
                 <h3>FILE LOCATIONS</h3>
-                <div class="code-block">Graph-Tools/
-├── mcp-graph-server/data/     # CSV and JSON files
-└── Files/                     # HTML visualizations</div>
+                <div class="code-block">Project structure:
+
+Graph-Tools/
+├── mcp-graph-server/
+│   └── data/                  (CSV and JSON files)
+└── Files/                     (HTML visualizations)
+
+Example generated files:
+- /Graph-Tools/mcp-graph-server/data/matrix_1642781234567.csv
+- /Graph-Tools/Files/visualization_1642781234567.html
+- /Graph-Tools/Files/graph_data_1642781234567.json</div>
             </div>
 
             <div class="section">
                 <h2>INTEGRATION EXAMPLES</h2>
                 
-                <h3>PYTHON MCP CLIENT</h3>
-                <div class="code-block">import subprocess
+                <h3>PYTHON HTTP CLIENT</h3>
+                <div class="code-block">Step 1: Install the requests library
+pip install requests
+
+Step 2: Import required modules
+import requests
 import json
 
-def call_mcp_tool(tool_name, arguments):
-    request = {
-        "method": "tools/call",
-        "params": {
-            "name": tool_name,
-            "arguments": arguments
-        }
-    }
+Step 3: Define the API endpoint
+api_url = "http://localhost:3001/api/analyze-relationships"
+
+Step 4: Prepare your data
+data = {
+    "data": [
+        {"id": "Alice", "friends": ["Bob", "Carol"]},
+        {"id": "Bob", "friends": ["Alice", "David"]},
+        {"id": "Carol", "friends": ["Alice"]},
+        {"id": "David", "friends": ["Bob"]}
+    ],
+    "relationship_fields": ["friends"],
+    "node_label_field": "id"
+}
+
+Step 5: Make the API request
+response = requests.post(api_url, json=data)
+
+Step 6: Check the response
+if response.status_code == 200:
+    result = response.json()
+    print("Success:", result["success"])
+    print("Data:", result["data"])
+else:
+    print("Error:", response.json()["error"])</div>
+
+                <h3>NODE.JS HTTP CLIENT</h3>
+                <div class="code-block">Step 1: Install axios for HTTP requests
+npm install axios
+
+Step 2: Import axios module
+const axios = require('axios');
+
+Step 3: Define the API endpoint
+const apiUrl = 'http://localhost:3001/api/analyze-relationships';
+
+Step 4: Prepare your data
+const data = {
+  data: [
+    { id: 'Alice', friends: ['Bob', 'Carol'] },
+    { id: 'Bob', friends: ['Alice', 'David'] },
+    { id: 'Carol', friends: ['Alice'] },
+    { id: 'David', friends: ['Bob'] }
+  ],
+  relationship_fields: ['friends'],
+  node_label_field: 'id'
+};
+
+Step 5: Make the API request
+async function analyzeRelationships() {
+  try {
+    const response = await axios.post(apiUrl, data);
     
-    process = subprocess.Popen(
-        ["node", "path/to/mcp-graph-server/index.js"],
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        text=True
-    )
-    
-    stdout, _ = process.communicate(json.dumps(request))
-    return json.loads(stdout)</div>
-
-                <h3>NODE.JS DIRECT USAGE</h3>
-                <div class="code-block">const { spawn } = require('child_process');
-
-const server = spawn('node', ['mcp-graph-server/index.js']);
-
-server.stdin.write(JSON.stringify({
-  method: 'tools/call',
-  params: {
-    name: 'analyze_relationships',
-    arguments: {
-      data: [{id: 'A', connects: ['B']}],
-      relationship_fields: ['connects']
-    }
+    console.log('Success:', response.data.success);
+    console.log('Result:', response.data.data);
+  } catch (error) {
+    console.error('Error:', error.response?.data?.error || error.message);
   }
-}) + '\n');
+}
 
-server.stdout.on('data', (data) => {
-  console.log('Response:', JSON.parse(data));
-});</div>
+Step 6: Call the function
+analyzeRelationships();</div>
             </div>
         </div>
         
