@@ -265,8 +265,8 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>MCP GRAPH SERVER DOCUMENTATION</h1>
-            <p>MODEL CONTEXT PROTOCOL SERVER FOR GRAPH ANALYSIS & VISUALIZATION</p>
+            <h1>MCP SERVER API REFERENCE</h1>
+            <p>GRAPH ANALYSIS API VIA MODEL CONTEXT PROTOCOL</p>
         </div>
         
         <div class="nav-buttons">
@@ -276,293 +276,312 @@
         
         <div class="content">
             <div class="section">
-                <h2>Overview</h2>
-                <p>The Graph Tools MCP Server is a Model Context Protocol (MCP) server that provides AI assistants with powerful graph analysis capabilities. It can analyze relationships in data, create interactive visualizations, and perform advanced network analysis including centrality measures.</p>
+                <h2>MCP SERVER API</h2>
+                <p>The Graph Tools MCP Server provides a Model Context Protocol (MCP) interface for graph analysis. This API is designed to be used by AI assistants like Claude through the MCP protocol.</p>
                 
-                <div class="feature-list">
-                    <div class="feature-item">
-                        <h4>🔍 Relationship Analysis</h4>
-                        <p>Automatically detect and analyze relationships in your data structures</p>
-                    </div>
-                    <div class="feature-item">
-                        <h4>📊 Adjacency Matrices</h4>
-                        <p>Create and visualize adjacency matrices from relationship data</p>
-                    </div>
-                    <div class="feature-item">
-                        <h4>🎯 Centrality Measures</h4>
-                        <p>Calculate degree, betweenness, closeness, and eigenvector centrality</p>
-                    </div>
-                    <div class="feature-item">
-                        <h4>🌐 Interactive Visualizations</h4>
-                        <p>Generate interactive D3.js visualizations with DFS/BFS highlighting</p>
-                    </div>
+                <div class="alert">
+                    <strong>Protocol:</strong> This is an MCP server, not a REST API. It communicates via stdio using the Model Context Protocol specification.
                 </div>
             </div>
 
             <div class="section">
-                <h2>Installation & Setup</h2>
-                <div class="installation-steps">
-                    <h3>Prerequisites</h3>
-                    <ul>
-                        <li>Node.js (v16 or higher)</li>
-                        <li>Ruby (for graph processing)</li>
-                        <li>Claude Desktop or compatible MCP client</li>
-                    </ul>
-                    
-                    <h3>Installation Steps</h3>
-                    <ol>
-                        <li>Clone the Graph Tools repository</li>
-                        <li>Navigate to the <code>mcp-graph-server</code> directory</li>
-                        <li>Run <code>npm install</code> to install dependencies</li>
-                        <li>Configure your MCP client to use the server</li>
-                    </ol>
-                </div>
+                <h2>SERVER SETUP</h2>
                 
-                <h3>MCP Client Configuration</h3>
-                <p>Add this configuration to your Claude Desktop config file:</p>
+                <h3>INSTALLATION</h3>
+                <div class="code-block">git clone https://github.com/yourusername/Graph-Tools.git
+cd Graph-Tools/mcp-graph-server
+npm install</div>
+                
+                <h3>MCP CLIENT CONFIGURATION</h3>
+                <p>Add to your Claude Desktop config:</p>
                 <div class="code-block">{
   "mcpServers": {
     "graph-server": {
       "command": "node",
-      "args": ["path/to/Graph-Tools/mcp-graph-server/index.js"],
+      "args": ["/path/to/Graph-Tools/mcp-graph-server/index.js"],
       "env": {}
     }
   }
 }</div>
+
+                <h3>DIRECT EXECUTION</h3>
+                <div class="code-block">node /path/to/Graph-Tools/mcp-graph-server/index.js</div>
             </div>
 
             <div class="section">
-                <h2>Available Tools</h2>
+                <h2>API ENDPOINTS</h2>
                 
                 <div class="tool-card">
-                    <div class="tool-name">analyze_relationships</div>
+                    <div class="tool-name">ANALYZE_RELATIONSHIPS</div>
                     <div class="tool-description">
-                        Analyze relationships in data and create a comprehensive graph visualization with automatic relationship detection.
+                        Extracts relationships from structured data and generates graph visualizations
                     </div>
-                    <div class="parameters">
-                        <h4>Parameters:</h4>
-                        <div class="parameter">
-                            <span class="parameter-name">data</span>
-                            <span class="parameter-type">array</span>
-                            <span class="required">required</span>
-                            <div>Array of data objects to analyze for relationships</div>
-                        </div>
-                        <div class="parameter">
-                            <span class="parameter-name">relationship_fields</span>
-                            <span class="parameter-type">array</span>
-                            <span class="required">required</span>
-                            <div>Fields to use for determining relationships (e.g., ["id", "parent_id"])</div>
-                        </div>
-                        <div class="parameter">
-                            <span class="parameter-name">node_label_field</span>
-                            <span class="parameter-type">string</span>
-                            <div>Field to use as node labels (default: "id")</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="tool-card">
-                    <div class="tool-name">create_adjacency_matrix</div>
-                    <div class="tool-description">
-                        Create an adjacency matrix from predefined relationship data and generate an interactive visualization.
-                    </div>
-                    <div class="parameters">
-                        <h4>Parameters:</h4>
-                        <div class="parameter">
-                            <span class="parameter-name">relationships</span>
-                            <span class="parameter-type">array</span>
-                            <span class="required">required</span>
-                            <div>Array of relationship objects with from/to properties</div>
-                        </div>
-                        <div class="parameter">
-                            <span class="parameter-name">vertices</span>
-                            <span class="parameter-type">array</span>
-                            <span class="required">required</span>
-                            <div>Array of vertex names</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="tool-card">
-                    <div class="tool-name">calculate_centrality</div>
-                    <div class="tool-description">
-                        Calculate various centrality measures for graph nodes to identify the most important vertices in the network.
-                    </div>
-                    <div class="parameters">
-                        <h4>Parameters:</h4>
-                        <div class="parameter">
-                            <span class="parameter-name">relationships</span>
-                            <span class="parameter-type">array</span>
-                            <span class="required">required</span>
-                            <div>Array of relationship objects with from/to properties</div>
-                        </div>
-                        <div class="parameter">
-                            <span class="parameter-name">vertices</span>
-                            <span class="parameter-type">array</span>
-                            <span class="required">required</span>
-                            <div>Array of vertex names</div>
-                        </div>
-                        <div class="parameter">
-                            <span class="parameter-name">measures</span>
-                            <span class="parameter-type">array</span>
-                            <div>Centrality measures to calculate: degree, betweenness, closeness, eigenvector, all (default: ["all"])</div>
-                        </div>
-                        <div class="parameter">
-                            <span class="parameter-name">top_n</span>
-                            <span class="parameter-type">number</span>
-                            <div>Number of top nodes to return for each measure (default: 10)</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="tool-card">
-                    <div class="tool-name">analyze_network_structure</div>
-                    <div class="tool-description">
-                        Comprehensive network analysis combining relationship analysis with centrality measures for complete network insights.
-                    </div>
-                    <div class="parameters">
-                        <h4>Parameters:</h4>
-                        <div class="parameter">
-                            <span class="parameter-name">data</span>
-                            <span class="parameter-type">array</span>
-                            <span class="required">required</span>
-                            <div>Array of data objects to analyze for relationships</div>
-                        </div>
-                        <div class="parameter">
-                            <span class="parameter-name">relationship_fields</span>
-                            <span class="parameter-type">array</span>
-                            <span class="required">required</span>
-                            <div>Fields to use for determining relationships</div>
-                        </div>
-                        <div class="parameter">
-                            <span class="parameter-name">node_label_field</span>
-                            <span class="parameter-type">string</span>
-                            <div>Field to use as node labels (default: "id")</div>
-                        </div>
-                        <div class="parameter">
-                            <span class="parameter-name">include_centrality</span>
-                            <span class="parameter-type">boolean</span>
-                            <div>Whether to include centrality analysis (default: true)</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="section">
-                <h2>Usage Examples</h2>
-                
-                <h3>Example 1: Social Network Analysis</h3>
-                <div class="code-block">// Example data structure
-const socialData = [
-  { id: "Alice", friends: ["Bob", "Carol"] },
-  { id: "Bob", friends: ["Alice", "David"] },
-  { id: "Carol", friends: ["Alice", "David"] },
-  { id: "David", friends: ["Bob", "Carol"] }
-];
-
-// Use with analyze_relationships tool
-{
-  "data": socialData,
-  "relationship_fields": ["friends"],
-  "node_label_field": "id"
+                    
+                    <h3>REQUEST FORMAT</h3>
+                    <div class="code-block">{
+  "method": "tools/call",
+  "params": {
+    "name": "analyze_relationships",
+    "arguments": {
+      "data": [
+        {"id": "A", "connects_to": ["B", "C"]},
+        {"id": "B", "connects_to": ["C"]},
+        {"id": "C", "connects_to": []}
+      ],
+      "relationship_fields": ["connects_to"],
+      "node_label_field": "id"
+    }
+  }
 }</div>
 
-                <h3>Example 2: Organizational Hierarchy</h3>
-                <div class="code-block">// Example organizational data
-const orgData = [
-  { name: "CEO", reports_to: null },
-  { name: "CTO", reports_to: "CEO" },
-  { name: "Engineer1", reports_to: "CTO" },
-  { name: "Engineer2", reports_to: "CTO" }
-];
+                    <h3>PARAMETERS</h3>
+                    <div class="parameter">
+                        <span class="parameter-name">data</span>
+                        <span class="parameter-type">array</span>
+                        <span class="required">required</span>
+                        <div>Array of objects containing relationship data</div>
+                    </div>
+                    <div class="parameter">
+                        <span class="parameter-name">relationship_fields</span>
+                        <span class="parameter-type">array</span>
+                        <span class="required">required</span>
+                        <div>Field names that contain relationship references</div>
+                    </div>
+                    <div class="parameter">
+                        <span class="parameter-name">node_label_field</span>
+                        <span class="parameter-type">string</span>
+                        <div>Field to use for node identification (default: "id")</div>
+                    </div>
 
-// Use with analyze_relationships tool
-{
-  "data": orgData,
-  "relationship_fields": ["reports_to"],
-  "node_label_field": "name"
+                    <h3>RESPONSE</h3>
+                    <div class="code-block">{
+  "content": [{
+    "type": "text",
+    "text": "Graph Analysis Complete!\n\nVertices: 3\nRelationships: 3\nFiles Generated:\n- matrix_1234567890.csv\n- visualization_1234567890.html"
+  }]
+}</div>
+                </div>
+
+                <div class="tool-card">
+                    <div class="tool-name">CREATE_ADJACENCY_MATRIX</div>
+                    <div class="tool-description">
+                        Creates adjacency matrix from predefined relationship pairs
+                    </div>
+                    
+                    <h3>REQUEST FORMAT</h3>
+                    <div class="code-block">{
+  "method": "tools/call",
+  "params": {
+    "name": "create_adjacency_matrix",
+    "arguments": {
+      "relationships": [
+        {"from": "A", "to": "B", "weight": 1},
+        {"from": "B", "to": "C", "weight": 2}
+      ],
+      "vertices": ["A", "B", "C"]
+    }
+  }
 }</div>
 
-                <h3>Example 3: Direct Relationship Analysis</h3>
-                <div class="code-block">// Direct relationship specification
+                    <h3>PARAMETERS</h3>
+                    <div class="parameter">
+                        <span class="parameter-name">relationships</span>
+                        <span class="parameter-type">array</span>
+                        <span class="required">required</span>
+                        <div>Array of {from, to, weight} relationship objects</div>
+                    </div>
+                    <div class="parameter">
+                        <span class="parameter-name">vertices</span>
+                        <span class="parameter-type">array</span>
+                        <span class="required">required</span>
+                        <div>Array of vertex identifiers</div>
+                    </div>
+                </div>
+
+                <div class="tool-card">
+                    <div class="tool-name">CALCULATE_CENTRALITY</div>
+                    <div class="tool-description">
+                        Computes network centrality measures for graph analysis
+                    </div>
+                    
+                    <h3>REQUEST FORMAT</h3>
+                    <div class="code-block">{
+  "method": "tools/call",
+  "params": {
+    "name": "calculate_centrality",
+    "arguments": {
+      "relationships": [
+        {"from": "A", "to": "B"},
+        {"from": "B", "to": "C"}
+      ],
+      "vertices": ["A", "B", "C"],
+      "measures": ["degree", "betweenness"],
+      "top_n": 5
+    }
+  }
+}</div>
+
+                    <h3>PARAMETERS</h3>
+                    <div class="parameter">
+                        <span class="parameter-name">measures</span>
+                        <span class="parameter-type">array</span>
+                        <div>Available: ["degree", "betweenness", "closeness", "eigenvector", "all"]</div>
+                    </div>
+                    <div class="parameter">
+                        <span class="parameter-name">top_n</span>
+                        <span class="parameter-type">number</span>
+                        <div>Number of top-ranked nodes to return (default: 10)</div>
+                    </div>
+
+                    <h3>RESPONSE</h3>
+                    <div class="code-block">{
+  "content": [{
+    "type": "text",
+    "text": "Centrality Analysis Complete!\n\nDegree Centrality:\n1. B: 0.5000\n2. A: 0.2500\n3. C: 0.2500"
+  }]
+}</div>
+                </div>
+
+                <div class="tool-card">
+                    <div class="tool-name">ANALYZE_NETWORK_STRUCTURE</div>
+                    <div class="tool-description">
+                        Comprehensive analysis combining relationship extraction and centrality
+                    </div>
+                    
+                    <h3>REQUEST FORMAT</h3>
+                    <div class="code-block">{
+  "method": "tools/call",
+  "params": {
+    "name": "analyze_network_structure",
+    "arguments": {
+      "data": [...],
+      "relationship_fields": [...],
+      "include_centrality": true
+    }
+  }
+}</div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>DATA FORMATS</h2>
+                
+                <h3>RELATIONSHIP PATTERNS</h3>
+                
+                <div class="code-block">// One-to-many relationships
 {
-  "relationships": [
-    { "from": "A", "to": "B", "weight": 1 },
-    { "from": "B", "to": "C", "weight": 2 },
-    { "from": "C", "to": "A", "weight": 1 }
-  ],
-  "vertices": ["A", "B", "C"]
+  "id": "user1",
+  "friends": ["user2", "user3", "user4"]
+}
+
+// One-to-one relationships
+{
+  "employee": "John",
+  "manager": "Sarah"
+}
+
+// Hierarchical data
+{
+  "name": "node1",
+  "parent": "root",
+  "children": ["node2", "node3"]
+}</div>
+
+                <h3>DIRECT RELATIONSHIPS</h3>
+                <div class="code-block">{
+  "from": "source_node",
+  "to": "target_node",
+  "weight": 1.5
+}</div>
+
+                <h3>VERTEX SPECIFICATION</h3>
+                <div class="code-block">["node1", "node2", "node3"]</div>
+            </div>
+
+            <div class="section">
+                <h2>ERROR RESPONSES</h2>
+                
+                <h3>VALIDATION ERRORS</h3>
+                <div class="code-block">{
+  "content": [{
+    "type": "text",
+    "text": "Error: Invalid input: relationships and vertices must be arrays"
+  }],
+  "isError": true
+}</div>
+
+                <h3>PROCESSING ERRORS</h3>
+                <div class="code-block">{
+  "content": [{
+    "type": "text",
+    "text": "Error: Failed to analyze relationships: Ruby script execution failed"
+  }],
+  "isError": true
 }</div>
             </div>
 
             <div class="section">
-                <h2>Output Features</h2>
+                <h2>OUTPUT FILES</h2>
                 
-                <div class="alert">
-                    <strong>Automatic Visualization:</strong> All tools automatically generate interactive HTML visualizations that open in your browser with real-time graph manipulation capabilities.
-                </div>
-                
-                <h3>Generated Files</h3>
+                <h3>GENERATED ARTIFACTS</h3>
                 <ul>
-                    <li><strong>CSV Matrix:</strong> Adjacency matrix in CSV format for further analysis</li>
-                    <li><strong>JSON Data:</strong> Graph data in JSON format for programmatic use</li>
-                    <li><strong>Interactive HTML:</strong> Complete D3.js visualization with controls</li>
-                    <li><strong>Vertex Lists:</strong> JSON files containing vertex information</li>
+                    <li><strong>CSV Matrix:</strong> <code>matrix_TIMESTAMP.csv</code> - Adjacency matrix</li>
+                    <li><strong>JSON Data:</strong> <code>graph_data_TIMESTAMP.json</code> - D3.js format</li>
+                    <li><strong>HTML Visualization:</strong> <code>visualization_TIMESTAMP.html</code> - Interactive viewer</li>
+                    <li><strong>Vertex List:</strong> <code>vertices_TIMESTAMP.json</code> - Node labels</li>
                 </ul>
-                
-                <h3>Visualization Features</h3>
-                <ul>
-                    <li>🎮 Interactive drag-and-drop node positioning</li>
-                    <li>🔍 Real-time DFS/BFS algorithm visualization</li>
-                    <li>📊 Graph statistics and metrics display</li>
-                    <li>🎨 Color-coded nodes and edges</li>
-                    <li>📈 Adjacency matrix export functionality</li>
-                    <li>🔄 Force-directed layout algorithms</li>
-                </ul>
+
+                <h3>FILE LOCATIONS</h3>
+                <div class="code-block">Graph-Tools/
+├── mcp-graph-server/data/     # CSV and JSON files
+└── Files/                     # HTML visualizations</div>
             </div>
 
             <div class="section">
-                <h2>Centrality Measures Explained</h2>
+                <h2>INTEGRATION EXAMPLES</h2>
                 
-                <div class="feature-list">
-                    <div class="feature-item">
-                        <h4>Degree Centrality</h4>
-                        <p>Measures the number of direct connections a node has. High degree centrality indicates well-connected nodes.</p>
-                    </div>
-                    <div class="feature-item">
-                        <h4>Betweenness Centrality</h4>
-                        <p>Measures how often a node appears on shortest paths between other nodes. High betweenness indicates bridge nodes.</p>
-                    </div>
-                    <div class="feature-item">
-                        <h4>Closeness Centrality</h4>
-                        <p>Measures the average shortest path length from a node to all other nodes. High closeness indicates central positions.</p>
-                    </div>
-                    <div class="feature-item">
-                        <h4>Eigenvector Centrality</h4>
-                        <p>Measures influence based on connections to other influential nodes. High eigenvector centrality indicates prestigious connections.</p>
-                    </div>
-                </div>
-            </div>
+                <h3>PYTHON MCP CLIENT</h3>
+                <div class="code-block">import subprocess
+import json
 
-            <div class="section">
-                <h2>Error Handling & Troubleshooting</h2>
-                
-                <h3>Common Issues</h3>
-                <ul>
-                    <li><strong>Ruby not found:</strong> Ensure Ruby is installed and accessible in your PATH</li>
-                    <li><strong>Permission errors:</strong> Check that the server has write permissions to the data directory</li>
-                    <li><strong>Visualization not opening:</strong> Browser auto-open may fail on some systems; manually open the generated HTML file</li>
-                    <li><strong>Invalid data format:</strong> Ensure your data objects contain the specified relationship fields</li>
-                </ul>
-                
-                <h3>Data Validation</h3>
-                <p>The server automatically validates input data and provides detailed error messages for:</p>
-                <ul>
-                    <li>Missing required fields</li>
-                    <li>Invalid data types</li>
-                    <li>Empty or malformed relationships</li>
-                    <li>Circular references in data</li>
-                </ul>
+def call_mcp_tool(tool_name, arguments):
+    request = {
+        "method": "tools/call",
+        "params": {
+            "name": tool_name,
+            "arguments": arguments
+        }
+    }
+    
+    process = subprocess.Popen(
+        ["node", "path/to/mcp-graph-server/index.js"],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        text=True
+    )
+    
+    stdout, _ = process.communicate(json.dumps(request))
+    return json.loads(stdout)</div>
+
+                <h3>NODE.JS DIRECT USAGE</h3>
+                <div class="code-block">const { spawn } = require('child_process');
+
+const server = spawn('node', ['mcp-graph-server/index.js']);
+
+server.stdin.write(JSON.stringify({
+  method: 'tools/call',
+  params: {
+    name: 'analyze_relationships',
+    arguments: {
+      data: [{id: 'A', connects: ['B']}],
+      relationship_fields: ['connects']
+    }
+  }
+}) + '\n');
+
+server.stdout.on('data', (data) => {
+  console.log('Response:', JSON.parse(data));
+});</div>
             </div>
         </div>
         
