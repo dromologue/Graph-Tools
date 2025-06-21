@@ -104,6 +104,84 @@ class GraphMCPServer {
             },
             required: ['relationships', 'vertices']
           }
+        },
+        {
+          name: 'calculate_centrality',
+          description: 'Calculate centrality measures for graph nodes',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              relationships: {
+                type: 'array',
+                description: 'Array of relationship objects with from/to properties',
+                items: {
+                  type: 'object',
+                  properties: {
+                    from: { type: 'string' },
+                    to: { type: 'string' },
+                    weight: { type: 'number', default: 1 }
+                  },
+                  required: ['from', 'to']
+                }
+              },
+              vertices: {
+                type: 'array',
+                description: 'Array of vertex names',
+                items: {
+                  type: 'string'
+                }
+              },
+              measures: {
+                type: 'array',
+                description: 'Centrality measures to calculate: degree, betweenness, closeness, eigenvector',
+                items: {
+                  type: 'string',
+                  enum: ['degree', 'betweenness', 'closeness', 'eigenvector', 'all']
+                },
+                default: ['all']
+              },
+              top_n: {
+                type: 'number',
+                description: 'Number of top nodes to return for each measure',
+                default: 10
+              }
+            },
+            required: ['relationships', 'vertices']
+          }
+        },
+        {
+          name: 'analyze_network_structure',
+          description: 'Comprehensive network analysis including centrality measures and structure',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              data: {
+                type: 'array',
+                description: 'Array of data objects to analyze for relationships',
+                items: {
+                  type: 'object'
+                }
+              },
+              relationship_fields: {
+                type: 'array',
+                description: 'Fields to use for determining relationships (e.g., ["id", "parent_id"])',
+                items: {
+                  type: 'string'
+                }
+              },
+              node_label_field: {
+                type: 'string',
+                description: 'Field to use as node labels',
+                default: 'id'
+              },
+              include_centrality: {
+                type: 'boolean',
+                description: 'Whether to include centrality analysis',
+                default: true
+              }
+            },
+            required: ['data', 'relationship_fields']
+          }
         }
       ]
     }));
@@ -117,6 +195,10 @@ class GraphMCPServer {
             return await this.analyzeRelationships(args);
           case 'create_adjacency_matrix':
             return await this.createAdjacencyMatrix(args);
+          case 'calculate_centrality':
+            return await this.calculateCentrality(args);
+          case 'analyze_network_structure':
+            return await this.analyzeNetworkStructure(args);
           default:
             throw new Error(`Unknown tool: ${name}`);
         }
@@ -306,6 +388,356 @@ ${openStatus}
     } catch (error) {
       throw new Error(`Failed to create adjacency matrix: ${error.message}`);
     }
+  }
+
+  async calculateCentrality(args) {
+    try {
+      const { relationships, vertices, measures = ['all'], top_n = 10 } = args;
+      
+      // Validate inputs
+      if (!Array.isArray(relationships) || !Array.isArray(vertices)) {
+        throw new Error('Invalid input: relationships and vertices must be arrays');
+      }
+
+      // Build graph structure
+      const graph = this.buildGraphStructure(relationships, vertices);
+      const results = {};
+      const requestedMeasures = measures.includes('all') ? 
+        ['degree', 'betweenness', 'closeness', 'eigenvector'] : measures;
+
+      // Calculate each requested centrality measure
+      for (const measure of requestedMeasures) {
+        switch (measure) {
+          case 'degree':
+            results.degree = this.calculateDegreeCentrality(graph, vertices);
+            break;
+          case 'betweenness':
+            results.betweenness = this.calculateBetweennessCentrality(graph, vertices);
+            break;
+          case 'closeness':
+            results.closeness = this.calculateClosenessCentrality(graph, vertices);
+            break;
+          case 'eigenvector':
+            results.eigenvector = this.calculateEigenvectorCentrality(graph, vertices);
+            break;
+        }
+      }
+
+      // Format results for display
+      let responseText = '🎯 Centrality Analysis Complete!\n\n';
+      
+      for (const [measure, scores] of Object.entries(results)) {
+        const sorted = Object.entries(scores)
+          .map(([node, score]) => ({ node, score: Number(score) }))
+          .sort((a, b) => b.score - a.score)
+          .slice(0, top_n);
+
+        responseText += `📊 **${measure.charAt(0).toUpperCase() + measure.slice(1)} Centrality**\n`;
+        responseText += sorted.map((item, idx) => 
+          `${idx + 1}. ${item.node}: ${item.score.toFixed(4)}`
+        ).join('\n');
+        responseText += '\n\n';
+      }
+
+      responseText += `🔍 **Analysis Summary:**\n`;
+      responseText += `- Vertices analyzed: ${vertices.length}\n`;
+      responseText += `- Relationships: ${relationships.length}\n`;
+      responseText += `- Measures calculated: ${Object.keys(results).join(', ')}\n`;
+      responseText += `- Top nodes shown: ${Math.min(top_n, vertices.length)}`;
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: responseText
+          }
+        ]
+      };
+    } catch (error) {
+      throw new Error(`Failed to calculate centrality: ${error.message}`);
+    }
+  }
+
+  async analyzeNetworkStructure(args) {
+    try {
+      const { data, relationship_fields, node_label_field = 'id', include_centrality = true } = args;
+      
+      // First analyze relationships
+      const relationshipResult = await this.analyzeRelationships({
+        data,
+        relationship_fields,
+        node_label_field
+      });
+
+      if (!include_centrality) {
+        return relationshipResult;
+      }
+
+      // Extract relationships and vertices for centrality analysis
+      const relationships = [];
+      const vertices = new Set();
+      
+      for (const item of data) {
+        const nodeId = String(item[node_label_field] || '');
+        if (nodeId) vertices.add(nodeId);
+        
+        for (const field of relationship_fields) {
+          if (item[field]) {
+            if (Array.isArray(item[field])) {
+              for (const target of item[field]) {
+                const targetStr = String(target);
+                if (targetStr && targetStr !== nodeId) {
+                  relationships.push({ from: nodeId, to: targetStr, weight: 1 });
+                  vertices.add(targetStr);
+                }
+              }
+            } else if (item[field] !== null && String(item[field]) !== nodeId) {
+              const targetStr = String(item[field]);
+              if (targetStr) {
+                relationships.push({ from: nodeId, to: targetStr, weight: 1 });
+                vertices.add(targetStr);
+              }
+            }
+          }
+        }
+      }
+
+      // Calculate centrality measures
+      const centralityResult = await this.calculateCentrality({
+        relationships,
+        vertices: Array.from(vertices),
+        measures: ['all'],
+        top_n: 5
+      });
+
+      // Combine results
+      const combinedText = relationshipResult.content[0].text + '\n\n' +
+        '🎯 **Network Centrality Analysis:**\n' +
+        centralityResult.content[0].text.split('🎯 Centrality Analysis Complete!')[1];
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: combinedText
+          }
+        ]
+      };
+    } catch (error) {
+      throw new Error(`Failed to analyze network structure: ${error.message}`);
+    }
+  }
+
+  buildGraphStructure(relationships, vertices) {
+    const adjacencyList = {};
+    const adjacencyMatrix = {};
+    
+    // Initialize adjacency structures
+    for (const vertex of vertices) {
+      adjacencyList[vertex] = [];
+      adjacencyMatrix[vertex] = {};
+      for (const otherVertex of vertices) {
+        adjacencyMatrix[vertex][otherVertex] = 0;
+      }
+    }
+    
+    // Populate with relationships
+    for (const rel of relationships) {
+      const { from, to, weight = 1 } = rel;
+      if (from && to && vertices.includes(from) && vertices.includes(to)) {
+        adjacencyList[from].push({ node: to, weight });
+        adjacencyMatrix[from][to] = weight;
+      }
+    }
+    
+    return { adjacencyList, adjacencyMatrix, vertices };
+  }
+
+  calculateDegreeCentrality(graph, vertices) {
+    const { adjacencyList } = graph;
+    const centrality = {};
+    
+    for (const vertex of vertices) {
+      const outDegree = adjacencyList[vertex].length;
+      const inDegree = vertices.filter(v => 
+        adjacencyList[v].some(neighbor => neighbor.node === vertex)
+      ).length;
+      centrality[vertex] = (outDegree + inDegree) / (vertices.length - 1);
+    }
+    
+    return centrality;
+  }
+
+  calculateBetweennessCentrality(graph, vertices) {
+    const centrality = {};
+    vertices.forEach(v => centrality[v] = 0);
+    
+    // For each pair of vertices
+    for (let s = 0; s < vertices.length; s++) {
+      for (let t = s + 1; t < vertices.length; t++) {
+        const source = vertices[s];
+        const target = vertices[t];
+        
+        // Find all shortest paths between source and target
+        const paths = this.findAllShortestPaths(graph, source, target);
+        if (paths.length === 0) continue;
+        
+        // Count how many paths pass through each vertex
+        for (const vertex of vertices) {
+          if (vertex === source || vertex === target) continue;
+          
+          const pathsThrough = paths.filter(path => path.includes(vertex)).length;
+          centrality[vertex] += pathsThrough / paths.length;
+        }
+      }
+    }
+    
+    // Normalize
+    const n = vertices.length;
+    const normalizationFactor = ((n - 1) * (n - 2)) / 2;
+    if (normalizationFactor > 0) {
+      vertices.forEach(v => centrality[v] /= normalizationFactor);
+    }
+    
+    return centrality;
+  }
+
+  calculateClosenessCentrality(graph, vertices) {
+    const centrality = {};
+    
+    for (const vertex of vertices) {
+      const distances = this.dijkstra(graph, vertex);
+      const validDistances = Object.values(distances).filter(d => d !== Infinity && d > 0);
+      
+      if (validDistances.length === 0) {
+        centrality[vertex] = 0;
+      } else {
+        const avgDistance = validDistances.reduce((sum, d) => sum + d, 0) / validDistances.length;
+        centrality[vertex] = avgDistance > 0 ? 1 / avgDistance : 0;
+      }
+    }
+    
+    return centrality;
+  }
+
+  calculateEigenvectorCentrality(graph, vertices, maxIterations = 100, tolerance = 1e-6) {
+    const { adjacencyMatrix } = graph;
+    const n = vertices.length;
+    
+    // Initialize eigenvector
+    let centrality = {};
+    vertices.forEach(v => centrality[v] = 1 / Math.sqrt(n));
+    
+    for (let iter = 0; iter < maxIterations; iter++) {
+      const newCentrality = {};
+      
+      // Matrix-vector multiplication: A * x
+      for (const vertex of vertices) {
+        newCentrality[vertex] = 0;
+        for (const neighbor of vertices) {
+          newCentrality[vertex] += adjacencyMatrix[neighbor][vertex] * centrality[neighbor];
+        }
+      }
+      
+      // Normalize
+      const norm = Math.sqrt(Object.values(newCentrality).reduce((sum, val) => sum + val * val, 0));
+      if (norm > 0) {
+        vertices.forEach(v => newCentrality[v] /= norm);
+      }
+      
+      // Check convergence
+      const diff = vertices.reduce((sum, v) => 
+        sum + Math.abs(newCentrality[v] - centrality[v]), 0
+      );
+      
+      centrality = newCentrality;
+      
+      if (diff < tolerance) break;
+    }
+    
+    return centrality;
+  }
+
+  findAllShortestPaths(graph, source, target) {
+    const { adjacencyList } = graph;
+    const distances = {};
+    const predecessors = {};
+    const visited = new Set();
+    const queue = [source];
+    
+    // Initialize distances
+    distances[source] = 0;
+    predecessors[source] = [];
+    
+    // BFS to find shortest paths
+    while (queue.length > 0) {
+      const current = queue.shift();
+      if (visited.has(current)) continue;
+      visited.add(current);
+      
+      for (const neighbor of adjacencyList[current] || []) {
+        const next = neighbor.node;
+        const newDist = distances[current] + (neighbor.weight || 1);
+        
+        if (!(next in distances) || newDist < distances[next]) {
+          distances[next] = newDist;
+          predecessors[next] = [current];
+          queue.push(next);
+        } else if (newDist === distances[next]) {
+          predecessors[next].push(current);
+        }
+      }
+    }
+    
+    // Reconstruct all shortest paths
+    if (!(target in distances)) return [];
+    
+    const paths = [];
+    const buildPaths = (node, currentPath) => {
+      if (node === source) {
+        paths.push([source, ...currentPath.reverse()]);
+        return;
+      }
+      
+      for (const pred of predecessors[node] || []) {
+        buildPaths(pred, [node, ...currentPath]);
+      }
+    };
+    
+    buildPaths(target, []);
+    return paths;
+  }
+
+  dijkstra(graph, source) {
+    const { adjacencyList } = graph;
+    const distances = {};
+    const visited = new Set();
+    const priorityQueue = [{ node: source, distance: 0 }];
+    
+    // Initialize distances
+    distances[source] = 0;
+    
+    while (priorityQueue.length > 0) {
+      // Simple priority queue (sort by distance)
+      priorityQueue.sort((a, b) => a.distance - b.distance);
+      const { node: current, distance: currentDist } = priorityQueue.shift();
+      
+      if (visited.has(current)) continue;
+      visited.add(current);
+      
+      for (const neighbor of adjacencyList[current] || []) {
+        const next = neighbor.node;
+        const weight = neighbor.weight || 1;
+        const newDist = currentDist + weight;
+        
+        if (!(next in distances) || newDist < distances[next]) {
+          distances[next] = newDist;
+          priorityQueue.push({ node: next, distance: newDist });
+        }
+      }
+    }
+    
+    return distances;
   }
 
   generateUniqueFilename(prefix, vertices, extension) {
