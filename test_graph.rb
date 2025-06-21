@@ -148,6 +148,125 @@ class TestGraph < Test::Unit::TestCase
     assert_equal [], empty_result
   end
 
+  def test_shortest_path_basic
+    # Create a simple path: A -> B -> C
+    linear_matrix = [
+      [0, 1, 0],
+      [0, 0, 1],
+      [0, 0, 0]
+    ]
+    linear_vertices = ['A', 'B', 'C']
+    linear_graph = Graph.new(linear_matrix, linear_vertices)
+    
+    path = linear_graph.shortest_path('A', 'C')
+    assert_equal ['A', 'B', 'C'], path
+    
+    # Test reverse path (should be empty in directed graph)
+    reverse_path = linear_graph.shortest_path('C', 'A')
+    assert_equal [], reverse_path
+  end
+
+  def test_shortest_path_direct_connection
+    # Test direct connection in our basic graph
+    path = @graph.shortest_path('A', 'B')
+    assert_equal ['A', 'B'], path
+    
+    path_reverse = @graph.shortest_path('B', 'A')
+    assert_equal ['B', 'A'], path_reverse
+  end
+
+  def test_shortest_path_no_connection
+    # Create disconnected graph
+    disconnected_matrix = [
+      [0, 1, 0, 0],
+      [1, 0, 0, 0],
+      [0, 0, 0, 1],
+      [0, 0, 1, 0]
+    ]
+    disconnected_vertices = ['A', 'B', 'C', 'D']
+    disconnected_graph = Graph.new(disconnected_matrix, disconnected_vertices)
+    
+    # No path between disconnected components
+    path = disconnected_graph.shortest_path('A', 'C')
+    assert_equal [], path
+    
+    path_reverse = disconnected_graph.shortest_path('C', 'A')
+    assert_equal [], path_reverse
+  end
+
+  def test_shortest_path_same_node
+    path = @graph.shortest_path('A', 'A')
+    assert_equal ['A'], path
+  end
+
+  def test_shortest_path_complex_graph
+    # Create a more complex graph for testing
+    # A -> B -> D
+    # |    |    |
+    # v    v    v
+    # C -> E -> F
+    complex_matrix = [
+      [0, 1, 1, 0, 0, 0],  # A -> B, C
+      [0, 0, 0, 1, 1, 0],  # B -> D, E
+      [0, 0, 0, 0, 1, 0],  # C -> E
+      [0, 0, 0, 0, 0, 1],  # D -> F
+      [0, 0, 0, 0, 0, 1],  # E -> F
+      [0, 0, 0, 0, 0, 0]   # F
+    ]
+    complex_vertices = ['A', 'B', 'C', 'D', 'E', 'F']
+    complex_graph = Graph.new(complex_matrix, complex_vertices)
+    
+    # Test shortest path A -> F (should be A -> B -> D -> F or A -> B -> E -> F)
+    path = complex_graph.shortest_path('A', 'F')
+    assert_equal 4, path.length
+    assert_equal 'A', path.first
+    assert_equal 'F', path.last
+    
+    # Should be one of the valid shortest paths
+    valid_paths = [
+      ['A', 'B', 'D', 'F'],
+      ['A', 'B', 'E', 'F']
+    ]
+    assert_includes valid_paths, path
+  end
+
+  def test_shortest_path_invalid_vertices
+    # Test with non-existent start vertex
+    path = @graph.shortest_path('Z', 'A')
+    assert_equal [], path
+    
+    # Test with non-existent end vertex
+    path = @graph.shortest_path('A', 'Z')
+    assert_equal [], path
+    
+    # Test with both non-existent
+    path = @graph.shortest_path('X', 'Z')
+    assert_equal [], path
+  end
+
+  def test_shortest_path_undirected_behavior
+    # Create a directed graph but test undirected shortest path
+    directed_matrix = [
+      [0, 1, 0],
+      [0, 0, 1],
+      [1, 0, 0]
+    ]
+    directed_vertices = ['A', 'B', 'C']
+    directed_graph = Graph.new(directed_matrix, directed_vertices)
+    
+    # Test undirected shortest path (should work in both directions)
+    path_ab = directed_graph.shortest_path_undirected('A', 'B')
+    assert_equal ['A', 'B'], path_ab
+    
+    path_ba = directed_graph.shortest_path_undirected('B', 'A')
+    assert_equal ['B', 'A'], path_ba
+    
+    # Test longer path
+    path_ac = directed_graph.shortest_path_undirected('A', 'C')
+    # Should be either A->B->C or A->C (via reverse edge)
+    assert_includes [['A', 'B', 'C'], ['A', 'C']], path_ac
+  end
+
   def test_to_json_data
     json_data = @graph.to_json_data
     

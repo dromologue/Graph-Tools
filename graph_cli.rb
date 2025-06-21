@@ -94,8 +94,18 @@ class GraphCLI
         @options[:operations] << [:neighbors, v]
       end
 
-      opts.on("--path FROM,TO", "Check if edge exists between vertices") do |path|
+      opts.on("--path FROM,TO", "Find shortest path between vertices") do |path|
         from, to = path.split(',')
+        @options[:operations] << [:path, from, to]
+      end
+
+      opts.on("--path-undirected FROM,TO", "Find shortest path treating graph as undirected") do |path|
+        from, to = path.split(',')
+        @options[:operations] << [:path_undirected, from, to]
+      end
+
+      opts.on("--edge FROM,TO", "Check if edge exists between vertices") do |edge|
+        from, to = edge.split(',')
         @options[:operations] << [:edge, from, to]
       end
 
@@ -155,6 +165,30 @@ class GraphCLI
         if vertex
           neighbors = graph.get_neighbors(vertex)
           puts "\nNeighbors of #{vertex}: #{neighbors.join(', ')}"
+        end
+      when :path
+        from_vertex = find_vertex(graph, op[1])
+        to_vertex = find_vertex(graph, op[2])
+        if from_vertex && to_vertex
+          path = graph.shortest_path(from_vertex, to_vertex)
+          if path.empty?
+            puts "\nNo path found from #{from_vertex} to #{to_vertex}"
+          else
+            puts "\nShortest path #{from_vertex} -> #{to_vertex}: #{path.join(' -> ')}"
+            puts "Path length: #{path.length - 1} edge(s)"
+          end
+        end
+      when :path_undirected
+        from_vertex = find_vertex(graph, op[1])
+        to_vertex = find_vertex(graph, op[2])
+        if from_vertex && to_vertex
+          path = graph.shortest_path_undirected(from_vertex, to_vertex)
+          if path.empty?
+            puts "\nNo undirected path found from #{from_vertex} to #{to_vertex}"
+          else
+            puts "\nShortest undirected path #{from_vertex} -> #{to_vertex}: #{path.join(' -> ')}"
+            puts "Path length: #{path.length - 1} edge(s)"
+          end
         end
       when :edge
         from_vertex = find_vertex(graph, op[1])

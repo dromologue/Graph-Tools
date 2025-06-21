@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Path Finding Test</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+        select, button {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button {
+            background: #2196F3;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #1976D2;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        #graph {
+            width: 100%;
+            height: 500px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: #fafafa;
+        }
+        .node {
+            cursor: pointer;
+            stroke: #fff;
+            stroke-width: 2px;
+        }
+        .node.start-node {
+            fill: #66bb6a !important;
+            stroke: #388e3c !important;
+            stroke-width: 4px !important;
+        }
+        .node.end-node {
+            fill: #ef5350 !important;
+            stroke: #c62828 !important;
+            stroke-width: 4px !important;
+        }
+        .node.path-intermediate {
+            fill: #ffa726 !important;
+            stroke: #f57c00 !important;
+            stroke-width: 3px !important;
+        }
+        .link {
+            stroke: #999;
+            stroke-opacity: 0.8;
+            stroke-width: 2px;
+            fill: none;
+        }
+        .link.path-link {
+            stroke: #ffa726 !important;
+            stroke-width: 3px !important;
+            stroke-opacity: 1 !important;
+        }
+        .node-label {
+            font-size: 12px;
+            font-weight: bold;
+            text-anchor: middle;
+            dominant-baseline: central;
+            pointer-events: none;
+            fill: #333;
+        }
+        .results {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff3e0;
+            border-radius: 6px;
+            border: 2px solid #ff9800;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Path Finding Test</h1>
+        <div class="controls">
+            <label for="fromNode">From:</label>
+            <select id="fromNode">
+                <option value="">Select from node...</option>
+            </select>
+            <label for="toNode">To:</label>
+            <select id="toNode">
+                <option value="">Select to node...</option>
+            </select>
+            <button onclick="findPath()" id="pathBtn" disabled>Find Path</button>
+            <button onclick="clearHighlights()">Clear</button>
+        </div>
+        
+        <div id="graph"></div>
+        
+        <div id="results" class="results" style="display: none;">
+            <h3>Path Results</h3>
+            <div id="pathInfo"></div>
+        </div>
+    </div>
+
+    <script>
+        // Test graph data - a simple network
+        let graphData = {
+            nodes: [
+                { id: "A", name: "A", x: 100, y: 150 },
+                { id: "B", name: "B", x: 250, y: 100 },
+                { id: "C", name: "C", x: 400, y: 150 },
+                { id: "D", name: "D", x: 250, y: 250 },
+                { id: "E", name: "E", x: 400, y: 300 },
+                { id: "F", name: "F", x: 550, y: 200 }
+            ],
+            links: [
+                { source: "A", target: "B", weight: 1 },
+                { source: "B", target: "C", weight: 1 },
+                { source: "A", target: "D", weight: 1 },
+                { source: "D", target: "E", weight: 1 },
+                { source: "C", target: "E", weight: 1 },
+                { source: "C", target: "F", weight: 1 },
+                { source: "E", target: "F", weight: 1 }
+            ]
+        };
+
+        // D3 setup
+        const width = 1160;
+        const height = 500;
+
+        const svg = d3.select("#graph")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+        // Graph elements
+        let link = svg.append("g").selectAll("line");
+        let node = svg.append("g").selectAll("circle");
+        let label = svg.append("g").selectAll("text");
+
+        // Initialize
+        updateVisualization();
+        updateNodeOptions();
+
+        function updateVisualization() {
+            // Update links
+            link = link.data(graphData.links, d => `${d.source.id || d.source}-${d.target.id || d.target}`);
+            link.exit().remove();
+            link = link.enter().append("line")
+                .attr("class", "link")
+                .merge(link);
+
+            // Update nodes
+            node = node.data(graphData.nodes, d => d.id);
+            node.exit().remove();
+            const nodeEnter = node.enter().append("circle")
+                .attr("class", "node")
+                .attr("r", 15)
+                .attr("fill", "#4CAF50");
+            
+            node = nodeEnter.merge(node);
+
+            // Update labels
+            label = label.data(graphData.nodes, d => d.id);
+            label.exit().remove();
+            label = label.enter().append("text")
+                .attr("class", "node-label")
+                .merge(label)
+                .text(d => d.name);
+
+            // Position elements
+            link
+                .attr("x1", d => {
+                    const sourceNode = graphData.nodes.find(n => n.id === (d.source.id || d.source));
+                    return sourceNode ? sourceNode.x : 0;
+                })
+                .attr("y1", d => {
+                    const sourceNode = graphData.nodes.find(n => n.id === (d.source.id || d.source));
+                    return sourceNode ? sourceNode.y : 0;
+                })
+                .attr("x2", d => {
+                    const targetNode = graphData.nodes.find(n => n.id === (d.target.id || d.target));
+                    return targetNode ? targetNode.x : 0;
+                })
+                .attr("y2", d => {
+                    const targetNode = graphData.nodes.find(n => n.id === (d.target.id || d.target));
+                    return targetNode ? targetNode.y : 0;
+                });
+
+            node
+                .attr("cx", d => d.x)
+                .attr("cy", d => d.y);
+
+            label
+                .attr("x", d => d.x)
+                .attr("y", d => d.y);
+        }
+
+        function updateNodeOptions() {
+            const fromSelect = document.getElementById('fromNode');
+            const toSelect = document.getElementById('toNode');
+            
+            // Clear existing options
+            fromSelect.innerHTML = '<option value="">Select from node...</option>';
+            toSelect.innerHTML = '<option value="">Select to node...</option>';
+            
+            // Populate dropdowns
+            graphData.nodes.forEach(node => {
+                const fromOption = document.createElement('option');
+                fromOption.value = node.id;
+                fromOption.textContent = node.name;
+                fromSelect.appendChild(fromOption);
+                
+                const toOption = document.createElement('option');
+                toOption.value = node.id;
+                toOption.textContent = node.name;
+                toSelect.appendChild(toOption);
+            });
+            
+            // Enable path button
+            document.getElementById('pathBtn').disabled = false;
+        }
+
+        function findPath() {
+            const fromNodeId = document.getElementById('fromNode').value;
+            const toNodeId = document.getElementById('toNode').value;
+            
+            if (!fromNodeId || !toNodeId) {
+                alert("Please select both from and to nodes.");
+                return;
+            }
+            
+            if (fromNodeId === toNodeId) {
+                alert("From and to nodes cannot be the same.");
+                return;
+            }
+            
+            clearHighlights();
+            const path = findShortestPath(fromNodeId, toNodeId);
+            
+            if (path.length === 0) {
+                showResults(`No path found from ${fromNodeId} to ${toNodeId}`, false);
+                return;
+            }
+            
+            highlightPathBetweenNodes(path, fromNodeId, toNodeId);
+            showResults(path, true, fromNodeId, toNodeId);
+        }
+
+        function findShortestPath(start, end) {
+            const visited = new Set();
+            const queue = [{node: start, path: [start]}];
+            
+            while (queue.length > 0) {
+                const {node, path} = queue.shift();
+                
+                if (node === end) {
+                    return path;
+                }
+                
+                if (visited.has(node)) {
+                    continue;
+                }
+                
+                visited.add(node);
+                
+                // Find all neighbors (treat as undirected)
+                const neighbors = new Set();
+                
+                graphData.links.forEach(l => {
+                    if ((l.source.id || l.source) === node) {
+                        neighbors.add(l.target.id || l.target);
+                    }
+                    if ((l.target.id || l.target) === node) {
+                        neighbors.add(l.source.id || l.source);
+                    }
+                });
+                
+                for (const neighbor of neighbors) {
+                    if (!visited.has(neighbor)) {
+                        queue.push({
+                            node: neighbor,
+                            path: [...path, neighbor]
+                        });
+                    }
+                }
+            }
+            
+            return [];
+        }
+
+        function highlightPathBetweenNodes(path, startNodeId, endNodeId) {
+            // Clear all previous highlights
+            node.classed("start-node", false)
+                .classed("end-node", false)
+                .classed("path-intermediate", false);
+                
+            link.classed("path-link", false);
+            
+            // Apply new highlights
+            node.classed("start-node", d => d.id === startNodeId)
+                .classed("end-node", d => d.id === endNodeId)
+                .classed("path-intermediate", d => 
+                    path.includes(d.id) && d.id !== startNodeId && d.id !== endNodeId);
+            
+            // Highlight edges in path order
+            for (let i = 0; i < path.length - 1; i++) {
+                const sourceId = path[i];
+                const targetId = path[i + 1];
+                
+                link.classed("path-link", l => {
+                    const linkSource = l.source.id || l.source;
+                    const linkTarget = l.target.id || l.target;
+                    return (linkSource === sourceId && linkTarget === targetId) ||
+                           (linkSource === targetId && linkTarget === sourceId);
+                });
+            }
+        }
+
+        function clearHighlights() {
+            node.classed("start-node", false)
+                .classed("end-node", false)
+                .classed("path-intermediate", false);
+            link.classed("path-link", false);
+            document.getElementById('results').style.display = 'none';
+        }
+
+        function showResults(path, success, fromNode = null, toNode = null) {
+            const resultsDiv = document.getElementById('results');
+            const pathInfo = document.getElementById('pathInfo');
+            
+            if (success && Array.isArray(path)) {
+                pathInfo.innerHTML = `
+                    <p><strong>From:</strong> ${fromNode}</p>
+                    <p><strong>To:</strong> ${toNode}</p>
+                    <p><strong>Path:</strong> ${path.join(' → ')}</p>
+                    <p><strong>Path Length:</strong> ${path.length - 1} edge(s)</p>
+                    <p><strong>Nodes in Path:</strong> ${path.length}</p>
+                `;
+            } else {
+                pathInfo.innerHTML = `<p>${path}</p>`;
+            }
+            
+            resultsDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

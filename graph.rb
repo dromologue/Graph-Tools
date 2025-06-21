@@ -112,6 +112,69 @@ class Graph
     result
   end
 
+  def shortest_path(start_vertex, end_vertex)
+    return [] unless @vertices.include?(start_vertex) && @vertices.include?(end_vertex)
+    return [start_vertex] if start_vertex == end_vertex
+    
+    visited = Set.new
+    queue = [{vertex: start_vertex, path: [start_vertex]}]
+    
+    while !queue.empty?
+      current_data = queue.shift
+      current_vertex = current_data[:vertex]
+      current_path = current_data[:path]
+      
+      next if visited.include?(current_vertex)
+      visited.add(current_vertex)
+      
+      return current_path if current_vertex == end_vertex
+      
+      get_neighbors(current_vertex).each do |neighbor|
+        next if visited.include?(neighbor)
+        queue << {vertex: neighbor, path: current_path + [neighbor]}
+      end
+    end
+    
+    []
+  end
+
+  def shortest_path_undirected(start_vertex, end_vertex)
+    return [] unless @vertices.include?(start_vertex) && @vertices.include?(end_vertex)
+    return [start_vertex] if start_vertex == end_vertex
+    
+    visited = Set.new
+    queue = [{vertex: start_vertex, path: [start_vertex]}]
+    
+    while !queue.empty?
+      current_data = queue.shift
+      current_vertex = current_data[:vertex]
+      current_path = current_data[:path]
+      
+      next if visited.include?(current_vertex)
+      visited.add(current_vertex)
+      
+      return current_path if current_vertex == end_vertex
+      
+      # Get neighbors in both directions for undirected behavior
+      neighbors = Set.new
+      get_neighbors(current_vertex).each { |n| neighbors.add(n) }
+      
+      # Add reverse connections
+      @vertices.each_with_index do |vertex, i|
+        if has_edge?(vertex, current_vertex) && vertex != current_vertex
+          neighbors.add(vertex)
+        end
+      end
+      
+      neighbors.each do |neighbor|
+        next if visited.include?(neighbor)
+        queue << {vertex: neighbor, path: current_path + [neighbor]}
+      end
+    end
+    
+    []
+  end
+
   def display_matrix
     puts "   #{@vertices.join('  ')}"
     @matrix.each_with_index do |row, i|
