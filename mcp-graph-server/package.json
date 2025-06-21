@@ -6,10 +6,14 @@
   "type": "module",
   "scripts": {
     "start": "node index.js",
-    "dev": "node --watch index.js"
+    "api": "SERVER_MODE=http node api-server.js",
+    "mcp": "SERVER_MODE=mcp node api-server.js"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^0.6.0"
+    "@modelcontextprotocol/sdk": "^0.6.0",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "multer": "^1.4.5-lts.1"
   },
   "keywords": ["mcp", "graph", "relationships", "data-analysis"],
   "author": "Claude Code",
