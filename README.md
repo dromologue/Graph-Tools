@@ -1,6 +1,6 @@
 # Graph Tools - Interactive Graph Analysis Toolkit
 
-A comprehensive Ruby-based graph analysis toolkit with web visualizations and Claude Desktop MCP integration for AI-powered graph analysis.
+A comprehensive Ruby-based graph analysis toolkit with web visualizations and MCP server for AI-powered graph analysis.
 
 ## 🚀 Features
 
@@ -18,9 +18,10 @@ A comprehensive Ruby-based graph analysis toolkit with web visualizations and Cl
 - **Graph Statistics** - Real-time node count, edge count, and density calculations
 
 ### AI Integration
-- **Claude Desktop MCP Server** - Analyze relationship data using natural language
+- **MCP Server** - HTTP REST API and Claude Desktop MCP server
 - **Automatic Visualization** - Generate interactive graphs from structured data
 - **Smart Data Processing** - Extract relationships from various data formats
+- **Centrality Analysis** - Calculate degree, betweenness, closeness, eigenvector centrality
 
 ## 📦 Installation
 
@@ -35,6 +36,8 @@ git clone https://github.com/yourusername/Graph-Tools.git
 cd Graph-Tools
 
 # For local CLI usage
+gem install
+
 # Install MCP server dependencies
 cd mcp-graph-server
 npm install
@@ -43,20 +46,6 @@ cd ..
 # For web application
 npm install
 ```
-
-### 🌐 Web Application
-Deploy to Heroku for a full web interface:
-
-```bash
-# Quick deploy to Heroku
-heroku create your-graph-tools-app
-heroku buildpacks:add heroku/ruby
-heroku buildpacks:add heroku/nodejs
-git push heroku main
-heroku open
-```
-
-See [HEROKU_DEPLOY.md](HEROKU_DEPLOY.md) for detailed deployment instructions.
 
 ## 🔧 Usage
 
@@ -93,15 +82,26 @@ ruby graph_cli.rb -j output.json matrix.csv
 3. Try sample data for quick testing
 4. Get real-time analysis results
 
-### Claude Desktop Integration
+### MCP Server Integration
 
+#### HTTP REST API Mode
+```bash
+cd mcp-graph-server
+npm run api
+# Server runs on http://localhost:3001
+```
+
+#### Claude Desktop Mode
 1. **Configure Claude Desktop** (`~/Library/Application Support/Claude/claude_desktop_config.json`):
 ```json
 {
   "mcpServers": {
-    "graph-relationship-server": {
+    "graph-server": {
       "command": "node",
-      "args": ["/path/to/Graph-Tools/mcp-graph-server/index.js"]
+      "args": ["/path/to/Graph-Tools/mcp-graph-server/api-server.js"],
+      "env": {
+        "SERVER_MODE": "mcp"
+      }
     }
   }
 }
@@ -124,42 +124,54 @@ Analyze these relationships and create a graph visualization:
 Graph-Tools/
 ├── graph.rb                           # Core Graph class
 ├── graph_cli.rb                       # Command line interface
+├── server.js                          # Web application server
 ├── Files/                             # Visualization files directory
-│   ├── enhanced-graph-visualizer.html # Interactive D3.js visualizer with DFS/BFS
-│   ├── graph-visualizer.html          # Basic web visualizer
-│   └── *.json                         # Generated graph data files
-├── sample_matrix.*                    # Sample data files
-├── test_*.rb                          # Test suites
-├── run_all_tests.rb                   # Comprehensive test runner
-├── CLAUDE_DESKTOP_SETUP.md            # MCP server setup guide
-└── mcp-graph-server/                  # Claude Desktop MCP server
-    ├── index.js                       # MCP server implementation
-    ├── package.json                   # Node.js dependencies
-    ├── test-connection.js             # Connection testing
-    └── data/                          # MCP server working files
+│   └── enhanced-graph-visualizer.html # Interactive D3.js visualizer
+├── public/                            # Web application files
+│   ├── index.html                     # Main web interface
+│   └── mcp-documentation.html         # API documentation
+├── mcp-graph-server/                  # MCP server
+│   ├── api-server.js                  # Dual-mode MCP/HTTP server
+│   ├── index.js                       # Original MCP server
+│   ├── package.json                   # Node.js dependencies
+│   ├── claude-config-example.json     # Claude Desktop config example
+│   └── data/                          # Generated files (matrices, visualizations)
+├── Gemfile                            # Ruby dependencies
+├── package.json                       # Node.js web server dependencies
+└── README.md                          # This file
 ```
+
+## API Endpoints
+
+The MCP server provides both MCP protocol and HTTP REST API:
+
+- `POST /api/analyze-relationships` - Extract relationships from data
+- `POST /api/create-adjacency-matrix` - Build matrices from relationship pairs
+- `POST /api/calculate-centrality` - Compute network centrality measures
+- `POST /api/analyze-network-structure` - Comprehensive network analysis
+- `GET /health` - Health check endpoint
+
+See `/mcp-documentation.html` for complete API documentation with examples.
 
 ## Quick Start
 
 ### 1. Create a Graph Visually
 
 ```bash
-# Open the Enhanced Graph Visualizer (RECOMMENDED)
-open "Graph-Tools/Files/enhanced-graph-visualizer.html"
+# Open the Enhanced Graph Visualizer
+open "Files/enhanced-graph-visualizer.html"
 ```
 
 **In the enhanced visualizer:**
 - Add vertices by typing names and clicking "Add Node" 
 - Click two nodes to select them, then click "Add Edge"
-- Drag nodes to reposition them (stays within canvas bounds)
+- Drag nodes to reposition them
 - Run DFS/BFS operations and see visual highlights
 - Export as CSV matrix when done
 
 ### 2. Analyze Your Graph
 
 ```bash
-cd "Graph-Tools"
-
 # Basic analysis
 ruby graph_cli.rb your_graph.csv
 
@@ -178,8 +190,8 @@ ruby graph_cli.rb -v "Alice,Bob,Carol,David" --neighbors Carol your_graph.csv
 # Export for D3.js editor (interactive)
 ruby graph_cli.rb -v "Alice,Bob,Carol,David" -d your_graph.csv
 
-# Export for web editor (React-based)
-ruby graph_cli.rb -v "Alice,Bob,Carol,David" -w your_graph.csv
+# Export JSON for programmatic use
+ruby graph_cli.rb -v "Alice,Bob,Carol,David" -j output.json your_graph.csv
 ```
 
 ## Command Reference
@@ -193,7 +205,6 @@ Options:
   -v, --vertices LABELS    # Comma-separated vertex labels
   -f, --format FORMAT      # Output format (text, matrix, json)
   -j, --export-json FILE   # Export to JSON file
-  -w, --web               # Export for web visualization
   -d, --d3                # Export for D3.js visualization
   --dfs VERTEX            # Perform DFS traversal
   --bfs VERTEX            # Perform BFS traversal  
@@ -207,143 +218,14 @@ Options:
 - **TXT**: `0 1 0\n1 0 1\n0 1 0` (space-separated)
 - **JSON**: `{"matrix": [[0,1,0],[1,0,1],[0,1,0]]}`
 
-### Examples
+## MCP Server Tools
 
-```bash
-# Analyze sample data
-ruby graph_cli.rb sample_matrix.csv
+The MCP server provides these tools for AI assistants:
 
-# Social network analysis
-ruby graph_cli.rb -v "Alice,Bob,Carol,David" \
-  --dfs Alice \
-  --bfs Bob \
-  --neighbors Carol \
-  social_network.csv
-
-# Export and visualize
-ruby graph_cli.rb -v "Team1,Team2,Team3" -d project_dependencies.csv
-```
-
-## Testing
-
-```bash
-cd "Graph-Tools"
-
-# Run all tests
-ruby run_all_tests.rb
-
-# Run specific test suites
-ruby test_graph.rb      # Core graph functionality
-ruby test_cli.rb        # CLI operations  
-ruby test_integration.rb # End-to-end workflows
-```
-
-## MCP Server (Claude Integration)
-
-The MCP server enables Claude to analyze relationship data and create graphs.
-
-### Setup
-
-1. **Install dependencies:**
-   ```bash
-   cd "Graph-Tools/mcp-graph-server"
-   npm install
-   ```
-
-2. **Configure Claude Desktop** (`~/Library/Application Support/Claude/claude_desktop_config.json`):
-   ```json
-   {
-     "mcpServers": {
-       "graph-relationships": {
-         "command": "node",
-         "args": ["/Users/your-username/code/Graph-Tools/mcp-graph-server/index.js"],
-         "env": {}
-       }
-     }
-   }
-   ```
-
-3. **Restart Claude Desktop**
-
-### MCP Tools Available
-
-- `analyze_relationships` - Extract relationships from structured data
-- `create_adjacency_matrix` - Build matrices from relationships  
-- `graph_operations` - Perform DFS/BFS/analysis
-- `export_graph_d3` - Export for D3.js visualization
-
-## Visualizers
-
-### 🚀 Enhanced Graph Visualizer (`enhanced-graph-visualizer.html`) - **RECOMMENDED**
-- **Best for:** Complete graph analysis workflow
-- **Features:** 
-  - Interactive graph creation and editing
-  - Built-in DFS/BFS/Neighbors operations
-  - Real-time visual highlighting of algorithm results
-  - Live statistics and operation results panel
-  - Canvas-constrained nodes for better UX
-- **Use case:** Primary tool for all graph operations and analysis
-- **MCP Integration:** This is the visualizer generated by Claude Desktop
-
-### D3.js Force Layout (`graph-d3-visualizer.html`) - *Legacy*
-- **Status:** ⚠️ Deprecated - Use Enhanced Visualizer instead
-- **Features:** Basic drag nodes, add/remove elements
-- **Use case:** Legacy compatibility only
-
-### React Editor (`graph-editor.html`) - *Legacy*
-- **Status:** ⚠️ Deprecated - Use Enhanced Visualizer instead  
-- **Features:** Form-based node/edge creation, matrix view
-- **Use case:** Legacy compatibility only
-
-### Basic Visualizer (`graph-visualizer.html`) - *Legacy*
-- **Status:** ⚠️ Deprecated - Use Enhanced Visualizer instead
-- **Features:** Simple JSON data loading
-- **Use case:** Legacy compatibility only
-
-## Workflow Examples
-
-### 1. Social Network Analysis
-```bash
-# Create network in Enhanced Visualizer (RECOMMENDED)
-open "Graph-Tools/enhanced-graph-visualizer.html"
-# → Add people as nodes, friendships as edges
-# → Run DFS/BFS to analyze connections
-# → Export as social_network.csv
-
-# Analyze the network
-ruby graph_cli.rb -v "Alice,Bob,Carol,David,Eve" \
-  --dfs Alice \
-  --bfs Bob \
-  social_network.csv
-
-# Find central nodes and communities
-ruby graph_cli.rb -v "Alice,Bob,Carol,David,Eve" \
-  --neighbors Alice \
-  --neighbors Bob \
-  social_network.csv
-```
-
-### 2. Project Dependencies
-```bash
-# Create dependency graph
-ruby graph_cli.rb -v "auth,api,models,frontend,database,utils" \
-  dependencies.csv
-
-# Check for circular dependencies (DFS)
-ruby graph_cli.rb -v "auth,api,models,frontend,database,utils" \
-  --dfs auth \
-  dependencies.csv
-
-# Visualize the dependency tree
-ruby graph_cli.rb -v "auth,api,models,frontend,database,utils" \
-  -d dependencies.csv
-```
-
-### 3. Using with Claude (MCP)
-1. **Provide relationship data to Claude**
-2. **Ask:** "Analyze this organizational structure for reporting chains"
-3. **Claude uses MCP tools** to create adjacency matrix and perform analysis
-4. **Export results** to D3.js for interactive exploration
+- `analyze_relationships` - Extract relationships from structured data and create visualizations
+- `create_adjacency_matrix` - Build matrices from relationship pairs  
+- `calculate_centrality` - Compute network centrality measures (degree, betweenness, closeness, eigenvector)
+- `analyze_network_structure` - Comprehensive network analysis combining relationship extraction and centrality
 
 ## Performance
 
@@ -351,6 +233,7 @@ ruby graph_cli.rb -v "auth,api,models,frontend,database,utils" \
 - **DFS/BFS:** Linear time complexity O(V + E)
 - **Visualization:** Handles 50+ nodes smoothly in D3.js
 - **File formats:** All formats (CSV, JSON, TXT) supported efficiently
+- **HTTP API:** Fast response times for network analysis
 
 ## Error Handling
 
@@ -359,15 +242,12 @@ The tools provide comprehensive error handling for:
 - Non-existent vertices in operations  
 - Malformed input files
 - Missing dependencies
-
-Run tests to verify all error conditions are handled properly.
+- API validation errors
 
 ## Contributing
 
-The codebase includes comprehensive tests covering:
-- Core graph operations (27 tests)
-- CLI functionality (21 tests)  
-- Integration workflows (6 tests)
-- MCP server tools (9 tests)
-
-Run `ruby run_all_tests.rb` before making changes.
+The codebase follows clean architecture principles with separation of concerns:
+- Core graph operations in Ruby
+- Web interface with modern JavaScript
+- MCP server for AI integration
+- Comprehensive API documentation

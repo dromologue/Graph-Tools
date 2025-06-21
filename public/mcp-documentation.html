@@ -173,7 +173,8 @@
             font-family: Arial, sans-serif;
             font-size: 14px;
             line-height: 2.0;
-            white-space: pre-line;
+            white-space: pre;
+            tab-size: 2;
         }
         
         .installation-steps {
@@ -421,10 +422,22 @@ curl -X POST http://localhost:3001/api/analyze-relationships \
   -H "Content-Type: application/json" \
   -d '{
     "data": [
-      {"id": "Alice", "friends": ["Bob", "Carol"]},
-      {"id": "Bob", "friends": ["Alice", "David"]},
-      {"id": "Carol", "friends": ["Alice"]},
-      {"id": "David", "friends": ["Bob"]}
+      {
+        "id": "Alice", 
+        "friends": ["Bob", "Carol"]
+      },
+      {
+        "id": "Bob", 
+        "friends": ["Alice", "David"]
+      },
+      {
+        "id": "Carol", 
+        "friends": ["Alice"]
+      },
+      {
+        "id": "David", 
+        "friends": ["Bob"]
+      }
     ],
     "relationship_fields": ["friends"],
     "node_label_field": "id"
@@ -643,10 +656,22 @@ api_url = "http://localhost:3001/api/analyze-relationships"
 Step 4: Prepare your data
 data = {
     "data": [
-        {"id": "Alice", "friends": ["Bob", "Carol"]},
-        {"id": "Bob", "friends": ["Alice", "David"]},
-        {"id": "Carol", "friends": ["Alice"]},
-        {"id": "David", "friends": ["Bob"]}
+        {
+            "id": "Alice", 
+            "friends": ["Bob", "Carol"]
+        },
+        {
+            "id": "Bob", 
+            "friends": ["Alice", "David"]
+        },
+        {
+            "id": "Carol", 
+            "friends": ["Alice"]
+        },
+        {
+            "id": "David", 
+            "friends": ["Bob"]
+        }
     ],
     "relationship_fields": ["friends"],
     "node_label_field": "id"
@@ -676,10 +701,22 @@ const apiUrl = 'http://localhost:3001/api/analyze-relationships';
 Step 4: Prepare your data
 const data = {
   data: [
-    { id: 'Alice', friends: ['Bob', 'Carol'] },
-    { id: 'Bob', friends: ['Alice', 'David'] },
-    { id: 'Carol', friends: ['Alice'] },
-    { id: 'David', friends: ['Bob'] }
+    { 
+      id: 'Alice', 
+      friends: ['Bob', 'Carol'] 
+    },
+    { 
+      id: 'Bob', 
+      friends: ['Alice', 'David'] 
+    },
+    { 
+      id: 'Carol', 
+      friends: ['Alice'] 
+    },
+    { 
+      id: 'David', 
+      friends: ['Bob'] 
+    }
   ],
   relationship_fields: ['friends'],
   node_label_field: 'id'
