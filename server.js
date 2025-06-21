@@ -15,11 +15,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 app.use('/files', express.static('Files'));
 
-// Serve the enhanced visualizer as the main page
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'Files', 'enhanced-graph-visualizer.html'));
-});
-
 // File upload configuration
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -76,6 +71,88 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// Serve enhanced visualizer with optional graph data
+app.get('/visualizer', async (req, res) => {
+  try {
+    const { graphId } = req.query;
+    let template = await fs.readFile(path.join(__dirname, 'Files', 'enhanced-graph-visualizer.html'), 'utf8');
+    
+    if (graphId) {
+      // Try to load the specific graph data
+      try {
+        const graphData = await fs.readFile(path.join(__dirname, 'Files', graphId), 'utf8');
+        template = template.replace(
+          'let graphData = { nodes: [], links: [] };',
+          `let graphData = ${graphData};`
+        );
+      } catch (error) {
+        console.log('Could not load specific graph data:', error.message);
+      }
+    } else {
+      // If no specific graph is requested, try to load the latest one
+      try {
+        const files = await fs.readdir(path.join(__dirname, 'Files'));
+        const jsonFiles = files
+          .filter(f => f.startsWith('graph_d3_') && f.endsWith('.json'))
+          .sort((a, b) => {
+            const timeA = parseInt(a.match(/graph_d3_(\\d+)\\.json/)[1]);
+            const timeB = parseInt(b.match(/graph_d3_(\\d+)\\.json/)[1]);
+            return timeB - timeA;
+          });
+        
+        if (jsonFiles.length > 0) {
+          const latestFile = jsonFiles[0];
+          const graphData = await fs.readFile(path.join(__dirname, 'Files', latestFile), 'utf8');
+          template = template.replace(
+            'let graphData = { nodes: [], links: [] };',
+            `let graphData = ${graphData};`
+          );
+          console.log(`Auto-loaded latest graph data: ${latestFile}`);
+        }
+      } catch (error) {
+        console.log('Could not auto-load latest graph data:', error.message);
+      }
+    }
+    
+    res.send(template);
+  } catch (error) {
+    console.error('Error serving visualizer:', error);
+    res.status(500).send('Error loading visualizer');
+  }
+});
+
+// API endpoint to get latest graph data
+app.get('/api/latest-graph', async (req, res) => {
+  try {
+    const files = await fs.readdir('Files');
+    const jsonFiles = files
+      .filter(f => f.startsWith('graph_d3_') && f.endsWith('.json'))
+      .sort((a, b) => {
+        const timeA = parseInt(a.match(/graph_d3_(\d+)\.json/)[1]);
+        const timeB = parseInt(b.match(/graph_d3_(\d+)\.json/)[1]);
+        return timeB - timeA;
+      });
+    
+    if (jsonFiles.length > 0) {
+      const latestFile = jsonFiles[0];
+      const graphData = await fs.readFile(path.join('Files', latestFile), 'utf8');
+      res.json({
+        success: true,
+        filename: latestFile,
+        data: JSON.parse(graphData)
+      });
+    } else {
+      res.json({
+        success: false,
+        message: 'No graph data found'
+      });
+    }
+  } catch (error) {
+    console.error('Error getting latest graph:', error);
+    res.status(500).json({ error: 'Failed to get latest graph' });
+  }
+});
+
 // API endpoint to analyze graph from matrix
 app.post('/api/analyze', upload.single('matrix'), async (req, res) => {
   try {
@@ -124,7 +201,7 @@ app.post('/api/analyze', upload.single('matrix'), async (req, res) => {
         success: true,
         output: result.stdout,
         graphData: JSON.parse(graphData),
-        visualizationUrl: `/files/enhanced-graph-visualizer.html`
+        visualizationUrl: `/visualizer?graphId=${latestJsonFile}`
       });
     } else {
       res.json({

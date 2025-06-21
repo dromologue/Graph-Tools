@@ -329,6 +329,8 @@
                     
                     <div style="text-align: center; margin-top: 20px;">
                         <button type="submit">🔍 Analyze Graph</button>
+                        <button type="button" class="secondary" onclick="openVisualizer()">🎨 Interactive Graph Visualizer</button>
+                        <br>
                         <button type="button" class="sample" onclick="generateSample('social')">👥 Social Network Sample</button>
                         <button type="button" class="sample" onclick="generateSample('dependency')">🔗 Dependency Graph Sample</button>
                         <button type="button" class="sample" onclick="generateSample('basic')">⭐ Basic Graph Sample</button>
@@ -462,7 +464,7 @@
                 `;
                 
                 html += `
-                    <a href="/files/enhanced-graph-visualizer.html" target="_blank" class="visualization-link">
+                    <a href="${result.visualizationUrl}" target="_blank" class="visualization-link">
                         🎨 Open Interactive Visualization
                     </a>
                 `;
@@ -471,7 +473,7 @@
             if (result.visualizationUrl) {
                 html += `
                     <div style="margin: 20px 0;">
-                        <p>💡 <strong>Tip:</strong> Use the "Load JSON" button in the visualizer to load your graph data</p>
+                        <p>💡 <strong>Auto-loaded!</strong> Your graph data will be automatically displayed in the visualizer</p>
                     </div>
                 `;
             }
@@ -486,6 +488,10 @@
             
             contentDiv.innerHTML = `<div class="error">❌ ${message}</div>`;
             resultsDiv.classList.add('show');
+        }
+        
+        function openVisualizer() {
+            window.open('/visualizer', '_blank');
         }
         
         // Drag and drop functionality
