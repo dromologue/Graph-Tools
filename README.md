@@ -63,7 +63,7 @@ ruby graph_cli.rb -j output.json matrix.csv
 
 ### Interactive Visualizer
 
-1. Open `enhanced-graph-visualizer.html` in your browser
+1. Open `Files/enhanced-graph-visualizer.html` in your browser
 2. Load sample data or create your own graph
 3. Run DFS/BFS operations with visual highlighting
 4. Export matrices with custom filenames
@@ -99,7 +99,10 @@ Analyze these relationships and create a graph visualization:
 Graph-Tools/
 ├── graph.rb                           # Core Graph class
 ├── graph_cli.rb                       # Command line interface
-├── enhanced-graph-visualizer.html     # Interactive D3.js visualizer with DFS/BFS
+├── Files/                             # Visualization files directory
+│   ├── enhanced-graph-visualizer.html # Interactive D3.js visualizer with DFS/BFS
+│   ├── graph-visualizer.html          # Basic web visualizer
+│   └── *.json                         # Generated graph data files
 ├── sample_matrix.*                    # Sample data files
 ├── test_*.rb                          # Test suites
 ├── run_all_tests.rb                   # Comprehensive test runner
@@ -108,7 +111,7 @@ Graph-Tools/
     ├── index.js                       # MCP server implementation
     ├── package.json                   # Node.js dependencies
     ├── test-connection.js             # Connection testing
-    └── data/                          # Generated visualizations
+    └── data/                          # MCP server working files
 ```
 
 ## Quick Start
@@ -117,7 +120,7 @@ Graph-Tools/
 
 ```bash
 # Open the Enhanced Graph Visualizer (RECOMMENDED)
-open "Graph-Tools/enhanced-graph-visualizer.html"
+open "Graph-Tools/Files/enhanced-graph-visualizer.html"
 ```
 
 **In the enhanced visualizer:**

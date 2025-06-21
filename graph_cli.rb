@@ -173,26 +173,26 @@ class GraphCLI
     end
 
     if @options[:export_web]
-      web_filename = "graph_#{Time.now.to_i}.json"
+      web_filename = "Files/graph_#{Time.now.to_i}.json"
       graph.export_to_json(web_filename)
       puts "\nWeb visualization:"
       puts "1. Graph data exported to #{web_filename}"
-      puts "2. Opening graph-visualizer.html..."
+      puts "2. Opening Files/graph-visualizer.html..."
       puts "3. Use 'Load Graph JSON' button to load #{web_filename}"
       
-      system("open graph-visualizer.html") if RUBY_PLATFORM.include?('darwin')
+      system("open Files/graph-visualizer.html") if RUBY_PLATFORM.include?('darwin')
     end
 
     if @options[:export_d3]
-      d3_filename = "graph_d3_#{Time.now.to_i}.json"
+      d3_filename = "Files/graph_d3_#{Time.now.to_i}.json"
       graph.export_to_d3(d3_filename)
       puts "\nEnhanced Graph Visualization:"
       puts "1. Graph data exported to #{d3_filename}"
-      puts "2. Opening enhanced-graph-visualizer.html..."
+      puts "2. Opening Files/enhanced-graph-visualizer.html..."
       puts "3. Use 'Load JSON' button to load #{d3_filename}, or create new graphs interactively"
       puts "4. Run DFS/BFS operations with visual highlighting"
       
-      system("open enhanced-graph-visualizer.html") if RUBY_PLATFORM.include?('darwin')
+      system("open Files/enhanced-graph-visualizer.html") if RUBY_PLATFORM.include?('darwin')
     end
   end
 

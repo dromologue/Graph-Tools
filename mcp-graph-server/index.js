@@ -11,7 +11,7 @@ import {
   ReadResourceRequestSchema
 } from '@modelcontextprotocol/sdk/types.js';
 import { spawn } from 'child_process';
-import { readFile, writeFile, access } from 'fs/promises';
+import { readFile, writeFile, access, mkdir } from 'fs/promises';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -37,6 +37,7 @@ class GraphMCPServer {
     this.graphLibPath = join(__dirname, '..', 'graph.rb');
     this.cliPath = join(__dirname, '..', 'graph_cli.rb');
     this.dataDir = join(__dirname, 'data');
+    this.filesDir = join(__dirname, '..', 'Files');
     this.setupHandlers();
   }
 
@@ -296,10 +297,13 @@ Open the HTML file to explore your graph interactively.`
 
   async generateVisualization(matrixFile, vertices) {
     try {
+      // Ensure Files directory exists
+      await mkdir(this.filesDir, { recursive: true });
+      
       // Use the CLI to generate JSON data
       const timestamp = Date.now();
-      const jsonFile = join(this.dataDir, `graph_${timestamp}.json`);
-      const htmlFile = join(this.dataDir, `visualization_${timestamp}.html`);
+      const jsonFile = join(this.filesDir, `graph_${timestamp}.json`);
+      const htmlFile = join(this.filesDir, `visualization_${timestamp}.html`);
       
       // Generate JSON using CLI
       const vertexArgs = vertices ? `-v "${vertices.join(',')}"` : '';
@@ -308,7 +312,7 @@ Open the HTML file to explore your graph interactively.`
       await this.runCommand(command);
       
       // Read the enhanced template
-      const templatePath = join(__dirname, '..', 'enhanced-graph-visualizer.html');
+      const templatePath = join(this.filesDir, 'enhanced-graph-visualizer.html');
       let template = await readFile(templatePath, 'utf8');
       
       // Read and validate the generated JSON

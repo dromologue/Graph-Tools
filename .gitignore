@@ -10,6 +10,11 @@ mcp-graph-server/data/*.json
 mcp-graph-server/data/*.html
 mcp-graph-server/index_old.js
 
+# Generated visualization files
+Files/graph_*.json
+Files/graph_d3_*.json
+Files/visualization_*.html
+
 # Temporary files
 *.tmp
 *.temp
