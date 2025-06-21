@@ -1,0 +1,17 @@
+{
+  "name": "mcp-graph-server",
+  "version": "1.0.0",
+  "description": "MCP server for graph relationship analysis using Ruby graph library",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.6.0"
+  },
+  "keywords": ["mcp", "graph", "relationships", "data-analysis"],
+  "author": "Claude Code",
+  "license": "MIT"
+}

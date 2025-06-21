@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "graph-relationship-server": {
+      "command": "node",
+      "args": ["/Users/dromologue/code/Graph-Tools/mcp-graph-server/index.js"],
+      "env": {
+        "NODE_ENV": "production"
+      }
+    }
+  }
+}

@@ -1,0 +1,201 @@
+{
+  "nodes": [
+    {
+      "id": "Sigmund Freud",
+      "name": "Sigmund Freud",
+      "category": "default"
+    },
+    {
+      "id": "Freud",
+      "name": "Freud",
+      "category": "default"
+    },
+    {
+      "id": "Carl Jung",
+      "name": "Carl Jung",
+      "category": "default"
+    },
+    {
+      "id": "Jung",
+      "name": "Jung",
+      "category": "default"
+    },
+    {
+      "id": "Alfred Adler",
+      "name": "Alfred Adler",
+      "category": "default"
+    },
+    {
+      "id": "Adler",
+      "name": "Adler",
+      "category": "default"
+    },
+    {
+      "id": "Melanie Klein",
+      "name": "Melanie Klein",
+      "category": "default"
+    },
+    {
+      "id": "Klein",
+      "name": "Klein",
+      "category": "default"
+    },
+    {
+      "id": "Jacques Lacan",
+      "name": "Jacques Lacan",
+      "category": "default"
+    },
+    {
+      "id": "Lacan",
+      "name": "Lacan",
+      "category": "default"
+    },
+    {
+      "id": "Donald Winnicott",
+      "name": "Donald Winnicott",
+      "category": "default"
+    },
+    {
+      "id": "Winnicott",
+      "name": "Winnicott",
+      "category": "default"
+    },
+    {
+      "id": "Wilfred Bion",
+      "name": "Wilfred Bion",
+      "category": "default"
+    },
+    {
+      "id": "Bion",
+      "name": "Bion",
+      "category": "default"
+    },
+    {
+      "id": "Heinz Kohut",
+      "name": "Heinz Kohut",
+      "category": "default"
+    },
+    {
+      "id": "Kohut",
+      "name": "Kohut",
+      "category": "default"
+    },
+    {
+      "id": "Otto Kernberg",
+      "name": "Otto Kernberg",
+      "category": "default"
+    },
+    {
+      "id": "Kernberg",
+      "name": "Kernberg",
+      "category": "default"
+    },
+    {
+      "id": "Julia Kristeva",
+      "name": "Julia Kristeva",
+      "category": "default"
+    },
+    {
+      "id": "Kristeva",
+      "name": "Kristeva",
+      "category": "default"
+    }
+  ],
+  "links": [
+    {
+      "source": "Sigmund Freud",
+      "target": "Freud",
+      "weight": 1
+    },
+    {
+      "source": "Carl Jung",
+      "target": "Freud",
+      "weight": 1
+    },
+    {
+      "source": "Carl Jung",
+      "target": "Jung",
+      "weight": 1
+    },
+    {
+      "source": "Alfred Adler",
+      "target": "Freud",
+      "weight": 1
+    },
+    {
+      "source": "Alfred Adler",
+      "target": "Adler",
+      "weight": 1
+    },
+    {
+      "source": "Melanie Klein",
+      "target": "Freud",
+      "weight": 1
+    },
+    {
+      "source": "Melanie Klein",
+      "target": "Klein",
+      "weight": 1
+    },
+    {
+      "source": "Jacques Lacan",
+      "target": "Freud",
+      "weight": 1
+    },
+    {
+      "source": "Jacques Lacan",
+      "target": "Lacan",
+      "weight": 1
+    },
+    {
+      "source": "Donald Winnicott",
+      "target": "Klein",
+      "weight": 1
+    },
+    {
+      "source": "Donald Winnicott",
+      "target": "Winnicott",
+      "weight": 1
+    },
+    {
+      "source": "Wilfred Bion",
+      "target": "Klein",
+      "weight": 1
+    },
+    {
+      "source": "Wilfred Bion",
+      "target": "Bion",
+      "weight": 1
+    },
+    {
+      "source": "Heinz Kohut",
+      "target": "Freud",
+      "weight": 1
+    },
+    {
+      "source": "Heinz Kohut",
+      "target": "Kohut",
+      "weight": 1
+    },
+    {
+      "source": "Otto Kernberg",
+      "target": "Klein",
+      "weight": 1
+    },
+    {
+      "source": "Otto Kernberg",
+      "target": "Kernberg",
+      "weight": 1
+    },
+    {
+      "source": "Julia Kristeva",
+      "target": "Lacan",
+      "weight": 1
+    },
+    {
+      "source": "Julia Kristeva",
+      "target": "Kristeva",
+      "weight": 1
+    }
+  ]
+}

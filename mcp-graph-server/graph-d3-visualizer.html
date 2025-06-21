@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Graph Visualizer - D3.js Force Layout</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .control-group label {
+            font-weight: bold;
+            color: #555;
+        }
+        input[type="text"], input[type="number"], select {
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button {
+            padding: 8px 16px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button.danger {
+            background: #f44336;
+        }
+        button.danger:hover {
+            background: #d32f2f;
+        }
+        button.secondary {
+            background: #2196F3;
+        }
+        button.secondary:hover {
+            background: #1976D2;
+        }
+        #graph {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: #fafafa;
+        }
+        .node {
+            cursor: pointer;
+            stroke: #fff;
+            stroke-width: 2px;
+            transition: r 0.2s;
+        }
+        .node:hover {
+            stroke-width: 3px;
+        }
+        .node.selected {
+            stroke: #ff6b6b;
+            stroke-width: 4px;
+        }
+        .link {
+            stroke: #999;
+            stroke-opacity: 0.8;
+            stroke-width: 2px;
+            fill: none;
+            marker-end: url(#arrowhead);
+            cursor: pointer;
+        }
+        .link:hover {
+            stroke: #333;
+            stroke-width: 3px;
+        }
+        .link.weighted {
+            stroke: #e74c3c;
+            stroke-width: 3px;
+        }
+        .node-label {
+            font-size: 12px;
+            font-weight: bold;
+            text-anchor: middle;
+            pointer-events: none;
+            fill: #333;
+        }
+        .edge-label {
+            font-size: 11px;
+            text-anchor: middle;
+            pointer-events: none;
+            fill: #666;
+            font-weight: bold;
+        }
+        .tooltip {
+            position: absolute;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 13px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            max-width: 250px;
+            z-index: 1000;
+        }
+        .sidebar {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .panel {
+            flex: 1;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+        }
+        .panel h3 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 8px;
+        }
+        .node-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .node-tag {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            cursor: pointer;
+            border: 1px solid #bbdefb;
+            transition: all 0.2s;
+        }
+        .node-tag:hover {
+            background: #bbdefb;
+        }
+        .node-tag.selected {
+            background: #ff6b6b;
+            color: white;
+            border-color: #ff6b6b;
+        }
+        .matrix-display {
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            max-height: 200px;
+            overflow: auto;
+            white-space: pre;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .stat-item {
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+        .stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 2px;
+        }
+        .file-input {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Interactive Graph Visualizer</h1>
+            <p class="subtitle">D3.js Force Layout with Dynamic Editing and Adjacency Matrix Export</p>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label>Add Node:</label>
+                <input type="text" id="nodeInput" placeholder="Node name">
+                <input type="text" id="nodeCategory" placeholder="Category (optional)">
+                <button onclick="addNode()">Add Node</button>
+            </div>
+            
+            <div class="control-group">
+                <label>Edge Weight:</label>
+                <input type="number" id="edgeWeight" value="1" min="1" max="10">
+                <button onclick="addEdge()" id="addEdgeBtn" disabled>Add Edge</button>
+            </div>
+            
+            <div class="control-group">
+                <input type="file" id="fileInput" class="file-input" accept=".json" onchange="loadFile(event)">
+                <button onclick="document.getElementById('fileInput').click()" class="secondary">Load JSON</button>
+                <button onclick="exportToJSON()" class="secondary">Export JSON</button>
+                <button onclick="exportMatrix()" class="secondary">Export Matrix</button>
+            </div>
+            
+            <div class="control-group">
+                <button onclick="clearSelection()">Clear Selection</button>
+                <button onclick="resetLayout()" class="secondary">Reset Layout</button>
+                <button onclick="clearGraph()" class="danger">Clear All</button>
+            </div>
+        </div>
+
+        <div id="graph"></div>
+        
+        <div class="sidebar">
+            <div class="panel">
+                <h3>Graph Statistics</h3>
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-value" id="nodeCount">0</div>
+                        <div class="stat-label">Nodes</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="edgeCount">0</div>
+                        <div class="stat-label">Edges</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="density">0</div>
+                        <div class="stat-label">Density</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="avgDegree">0</div>
+                        <div class="stat-label">Avg Degree</div>
+                    </div>
+                </div>
+                
+                <h3>Selected Nodes</h3>
+                <div id="selectedNodes">Click nodes to select them for edge creation</div>
+                <div class="node-list" id="nodeList"></div>
+            </div>
+            
+            <div class="panel">
+                <h3>Adjacency Matrix</h3>
+                <div class="matrix-display" id="matrixDisplay">Empty graph</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        let graphData = {
+            nodes: [],
+            links: []
+        };
+        
+        let selectedNodes = [];
+        let nodeCategories = {};
+        let nextNodeId = 1;
+        
+        const categoryColors = {
+            'default': '#4CAF50',
+            'primary': '#2196F3',
+            'secondary': '#FF9800',
+            'success': '#8BC34A',
+            'danger': '#F44336',
+            'warning': '#FFC107',
+            'info': '#00BCD4',
+            'light': '#9E9E9E',
+            'dark': '#424242'
+        };
+
+        const width = 1360;
+        const height = 600;
+
+        const svg = d3.select("#graph")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+        // Add arrow marker
+        svg.append("defs").append("marker")
+            .attr("id", "arrowhead")
+            .attr("viewBox", "0 -5 10 10")
+            .attr("refX", 20)
+            .attr("refY", 0)
+            .attr("markerWidth", 6)
+            .attr("markerHeight", 6)
+            .attr("orient", "auto")
+            .append("path")
+            .attr("d", "M0,-5L10,0L0,5")
+            .attr("fill", "#999");
+
+        const tooltip = d3.select("#tooltip");
+
+        const simulation = d3.forceSimulation()
+            .force("link", d3.forceLink().id(d => d.id).distance(100))
+            .force("charge", d3.forceManyBody().strength(-400))
+            .force("center", d3.forceCenter(width / 2, height / 2))
+            .force("collision", d3.forceCollide().radius(30));
+
+        let link = svg.append("g").selectAll("line");
+        let linkLabel = svg.append("g").selectAll("text");
+        let node = svg.append("g").selectAll("circle");
+        let nodeLabel = svg.append("g").selectAll("text");
+
+        // Initialize with sample data
+        initializeSampleData();
+
+        function initializeSampleData() {
+            graphData = {
+                nodes: [
+                    {id: "A", name: "Alice", category: "primary"},
+                    {id: "B", name: "Bob", category: "secondary"},
+                    {id: "C", name: "Carol", category: "success"},
+                    {id: "D", name: "David", category: "warning"}
+                ],
+                links: [
+                    {source: "A", target: "B", weight: 1},
+                    {source: "B", target: "C", weight: 2},
+                    {source: "C", target: "D", weight: 1},
+                    {source: "D", target: "A", weight: 3}
+                ]
+            };
+            updateVisualization();
+        }
+
+        function updateVisualization() {
+            // Update links
+            link = link.data(graphData.links, d => `${d.source.id || d.source}-${d.target.id || d.target}`);
+            link.exit().remove();
+            link = link.enter().append("line")
+                .attr("class", "link")
+                .classed("weighted", d => d.weight > 1)
+                .on("click", function(event, d) {
+                    if (event.shiftKey) {
+                        removeEdge(d);
+                    }
+                })
+                .on("mouseover", function(event, d) {
+                    showTooltip(event, `Edge: ${d.source.id || d.source} → ${d.target.id || d.target}<br/>Weight: ${d.weight}<br/><em>Shift+click to remove</em>`);
+                })
+                .on("mouseout", hideTooltip)
+                .merge(link);
+
+            // Update link labels
+            linkLabel = linkLabel.data(graphData.links.filter(d => d.weight > 1));
+            linkLabel.exit().remove();
+            linkLabel = linkLabel.enter().append("text")
+                .attr("class", "edge-label")
+                .merge(linkLabel)
+                .text(d => d.weight);
+
+            // Update nodes
+            node = node.data(graphData.nodes, d => d.id);
+            node.exit().remove();
+            node = node.enter().append("circle")
+                .attr("class", "node")
+                .attr("r", 20)
+                .on("click", function(event, d) {
+                    selectNode(d.id);
+                })
+                .on("mouseover", function(event, d) {
+                    const degree = graphData.links.filter(l => l.source.id === d.id || l.target.id === d.id).length;
+                    showTooltip(event, `<strong>${d.name}</strong><br/>ID: ${d.id}<br/>Category: ${d.category || 'default'}<br/>Degree: ${degree}<br/><em>Click to select, Shift+click to remove</em>`);
+                })
+                .on("mouseout", hideTooltip)
+                .call(d3.drag()
+                    .on("start", dragstarted)
+                    .on("drag", dragged)
+                    .on("end", dragended))
+                .merge(node);
+
+            // Update node labels
+            nodeLabel = nodeLabel.data(graphData.nodes, d => d.id);
+            nodeLabel.exit().remove();
+            nodeLabel = nodeLabel.enter().append("text")
+                .attr("class", "node-label")
+                .merge(nodeLabel)
+                .text(d => d.name || d.id);
+
+            // Update colors and selection state
+            updateNodeStyles();
+
+            // Update simulation
+            simulation.nodes(graphData.nodes);
+            simulation.force("link").links(graphData.links);
+            simulation.alpha(1).restart();
+
+            updateStats();
+            updateMatrix();
+            updateNodeList();
+        }
+
+        function updateNodeStyles() {
+            node
+                .attr("fill", d => categoryColors[d.category] || categoryColors.default)
+                .classed("selected", d => selectedNodes.includes(d.id));
+        }
+
+        function selectNode(nodeId) {
+            if (event.shiftKey) {
+                removeNode(nodeId);
+                return;
+            }
+
+            if (selectedNodes.includes(nodeId)) {
+                selectedNodes = selectedNodes.filter(id => id !== nodeId);
+            } else if (selectedNodes.length < 2) {
+                selectedNodes.push(nodeId);
+            } else {
+                selectedNodes = [nodeId];
+            }
+            
+            updateNodeStyles();
+            updateSelectedNodesDisplay();
+            updateAddEdgeButton();
+        }
+
+        function addNode() {
+            const name = document.getElementById('nodeInput').value.trim();
+            const category = document.getElementById('nodeCategory').value.trim() || 'default';
+            
+            if (!name) return;
+            
+            const id = name.replace(/\s+/g, '_');
+            
+            if (graphData.nodes.find(n => n.id === id)) {
+                alert('Node with this ID already exists!');
+                return;
+            }
+            
+            graphData.nodes.push({
+                id: id,
+                name: name,
+                category: category
+            });
+            
+            document.getElementById('nodeInput').value = '';
+            document.getElementById('nodeCategory').value = '';
+            
+            updateVisualization();
+        }
+
+        function removeNode(nodeId) {
+            graphData.nodes = graphData.nodes.filter(n => n.id !== nodeId);
+            graphData.links = graphData.links.filter(l => 
+                (l.source.id || l.source) !== nodeId && (l.target.id || l.target) !== nodeId
+            );
+            selectedNodes = selectedNodes.filter(id => id !== nodeId);
+            updateVisualization();
+        }
+
+        function addEdge() {
+            if (selectedNodes.length !== 2) return;
+            
+            const [source, target] = selectedNodes;
+            const weight = parseInt(document.getElementById('edgeWeight').value) || 1;
+            
+            // Check if edge already exists
+            const existingEdge = graphData.links.find(l => 
+                (l.source.id || l.source) === source && (l.target.id || l.target) === target
+            );
+            
+            if (existingEdge) {
+                existingEdge.weight = weight;
+            } else {
+                graphData.links.push({
+                    source: source,
+                    target: target,
+                    weight: weight
+                });
+            }
+            
+            selectedNodes = [];
+            updateVisualization();
+        }
+
+        function removeEdge(edge) {
+            const sourceId = edge.source.id || edge.source;
+            const targetId = edge.target.id || edge.target;
+            graphData.links = graphData.links.filter(l => 
+                !((l.source.id || l.source) === sourceId && (l.target.id || l.target) === targetId)
+            );
+            updateVisualization();
+        }
+
+        function clearSelection() {
+            selectedNodes = [];
+            updateNodeStyles();
+            updateSelectedNodesDisplay();
+            updateAddEdgeButton();
+        }
+
+        function clearGraph() {
+            if (confirm('Are you sure you want to clear the entire graph?')) {
+                graphData = { nodes: [], links: [] };
+                selectedNodes = [];
+                updateVisualization();
+            }
+        }
+
+        function resetLayout() {
+            simulation.alpha(1).restart();
+        }
+
+        function updateSelectedNodesDisplay() {
+            const display = document.getElementById('selectedNodes');
+            if (selectedNodes.length === 0) {
+                display.textContent = 'Click nodes to select them for edge creation';
+            } else {
+                display.textContent = `Selected: ${selectedNodes.join(' → ')}`;
+            }
+        }
+
+        function updateAddEdgeButton() {
+            const btn = document.getElementById('addEdgeBtn');
+            btn.disabled = selectedNodes.length !== 2;
+        }
+
+        function updateStats() {
+            const nodeCount = graphData.nodes.length;
+            const edgeCount = graphData.links.length;
+            const maxEdges = nodeCount * (nodeCount - 1);
+            const density = maxEdges > 0 ? (edgeCount / maxEdges).toFixed(3) : 0;
+            const avgDegree = nodeCount > 0 ? (edgeCount * 2 / nodeCount).toFixed(1) : 0;
+            
+            document.getElementById('nodeCount').textContent = nodeCount;
+            document.getElementById('edgeCount').textContent = edgeCount;
+            document.getElementById('density').textContent = density;
+            document.getElementById('avgDegree').textContent = avgDegree;
+        }
+
+        function updateMatrix() {
+            const nodes = graphData.nodes;
+            const links = graphData.links;
+            
+            if (nodes.length === 0) {
+                document.getElementById('matrixDisplay').textContent = 'Empty graph';
+                return;
+            }
+            
+            const size = nodes.length;
+            const matrix = Array(size).fill().map(() => Array(size).fill(0));
+            
+            links.forEach(link => {
+                const sourceId = link.source.id || link.source;
+                const targetId = link.target.id || link.target;
+                const sourceIndex = nodes.findIndex(n => n.id === sourceId);
+                const targetIndex = nodes.findIndex(n => n.id === targetId);
+                
+                if (sourceIndex !== -1 && targetIndex !== -1) {
+                    matrix[sourceIndex][targetIndex] = link.weight;
+                }
+            });
+            
+            const header = '    ' + nodes.map(n => n.id.padStart(3)).join(' ');
+            const rows = matrix.map((row, i) => 
+                nodes[i].id.padEnd(3) + ' ' + row.map(val => val.toString().padStart(3)).join(' ')
+            );
+            
+            document.getElementById('matrixDisplay').textContent = [header, ...rows].join('\n');
+        }
+
+        function updateNodeList() {
+            const container = document.getElementById('nodeList');
+            container.innerHTML = '';
+            
+            graphData.nodes.forEach(node => {
+                const tag = document.createElement('div');
+                tag.className = `node-tag ${selectedNodes.includes(node.id) ? 'selected' : ''}`;
+                tag.textContent = node.name || node.id;
+                tag.onclick = () => selectNode(node.id);
+                container.appendChild(tag);
+            });
+        }
+
+        function showTooltip(event, content) {
+            tooltip.html(content)
+                .style("left", (event.pageX + 10) + "px")
+                .style("top", (event.pageY - 10) + "px")
+                .style("opacity", 1);
+        }
+
+        function hideTooltip() {
+            tooltip.style("opacity", 0);
+        }
+
+        function exportToJSON() {
+            const dataStr = JSON.stringify(graphData, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            const exportFileDefaultName = 'graph_d3.json';
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+        }
+
+        function exportMatrix() {
+            const nodes = graphData.nodes;
+            const links = graphData.links;
+            
+            if (nodes.length === 0) {
+                alert('No data to export');
+                return;
+            }
+            
+            const size = nodes.length;
+            const matrix = Array(size).fill().map(() => Array(size).fill(0));
+            
+            links.forEach(link => {
+                const sourceId = link.source.id || link.source;
+                const targetId = link.target.id || link.target;
+                const sourceIndex = nodes.findIndex(n => n.id === sourceId);
+                const targetIndex = nodes.findIndex(n => n.id === targetId);
+                
+                if (sourceIndex !== -1 && targetIndex !== -1) {
+                    matrix[sourceIndex][targetIndex] = link.weight;
+                }
+            });
+            
+            const csvContent = "data:text/csv;charset=utf-8," + 
+                matrix.map(row => row.join(',')).join('\n');
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', encodeURI(csvContent));
+            linkElement.setAttribute('download', 'adjacency_matrix.csv');
+            linkElement.click();
+        }
+
+        function loadFile(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        graphData = data;
+                        selectedNodes = [];
+                        updateVisualization();
+                    } catch (error) {
+                        alert('Error parsing JSON file: ' + error.message);
+                    }
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        function dragstarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+
+        function dragended(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+
+        simulation.on("tick", () => {
+            link
+                .attr("x1", d => d.source.x)
+                .attr("y1", d => d.source.y)
+                .attr("x2", d => d.target.x)
+                .attr("y2", d => d.target.y);
+
+            linkLabel
+                .attr("x", d => (d.source.x + d.target.x) / 2)
+                .attr("y", d => (d.source.y + d.target.y) / 2);
+
+            node
+                .attr("cx", d => d.x)
+                .attr("cy", d => d.y);
+
+            nodeLabel
+                .attr("x", d => d.x)
+                .attr("y", d => d.y);
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Delete' && selectedNodes.length > 0) {
+                selectedNodes.forEach(nodeId => removeNode(nodeId));
+            }
+            if (event.key === 'Escape') {
+                clearSelection();
+            }
+        });
+
+        // Initialize
+        updateSelectedNodesDisplay();
+        updateAddEdgeButton();
+    </script>
+</body>
+</html>

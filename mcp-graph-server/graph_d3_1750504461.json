@@ -1,0 +1,76 @@
+{
+  "nodes": [
+    {
+      "id": "Alice",
+      "name": "Alice",
+      "category": "default"
+    },
+    {
+      "id": "Bob",
+      "name": "Bob",
+      "category": "default"
+    },
+    {
+      "id": "Carol",
+      "name": "Carol",
+      "category": "default"
+    },
+    {
+      "id": "David",
+      "name": "David",
+      "category": "default"
+    }
+  ],
+  "links": [
+    {
+      "source": "Alice",
+      "target": "Bob",
+      "weight": 1
+    },
+    {
+      "source": "Alice",
+      "target": "Carol",
+      "weight": 1
+    },
+    {
+      "source": "Bob",
+      "target": "Alice",
+      "weight": 1
+    },
+    {
+      "source": "Bob",
+      "target": "Carol",
+      "weight": 1
+    },
+    {
+      "source": "Bob",
+      "target": "David",
+      "weight": 1
+    },
+    {
+      "source": "Carol",
+      "target": "Alice",
+      "weight": 1
+    },
+    {
+      "source": "Carol",
+      "target": "Bob",
+      "weight": 1
+    },
+    {
+      "source": "Carol",
+      "target": "David",
+      "weight": 1
+    },
+    {
+      "source": "David",
+      "target": "Bob",
+      "weight": 1
+    },
+    {
+      "source": "David",
+      "target": "Carol",
+      "weight": 1
+    }
+  ]
+}

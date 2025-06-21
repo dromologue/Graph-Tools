@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class Relationship Visualization</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        #graph {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: #fafafa;
+        }
+        .node {
+            cursor: pointer;
+            stroke: #fff;
+            stroke-width: 2px;
+        }
+        .node:hover {
+            stroke-width: 3px;
+        }
+        .link {
+            stroke: #666;
+            stroke-width: 2px;
+            marker-end: url(#arrowhead);
+        }
+        .node-label {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            font-weight: bold;
+            text-anchor: middle;
+            dominant-baseline: central;
+            pointer-events: none;
+            fill: #333;
+        }
+        .info {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e8f5e8;
+            border-radius: 4px;
+        }
+        .legend {
+            margin-top: 15px;
+            padding: 10px;
+            background: #f0f8ff;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Graph Tools - Class Relationship Visualization</h1>
+        <div id="graph"></div>
+        
+        <div class="info">
+            <h3>Class Structure Analysis</h3>
+            <p><strong>Architecture Pattern:</strong> Hub-and-spoke with Graph as foundation</p>
+            <ul>
+                <li><strong>Graph (Ruby)</strong> - Core graph data structure and algorithms</li>
+                <li><strong>GraphMCPServer (JavaScript)</strong> - MCP server for Claude integration</li>
+                <li><strong>Test Classes</strong> - Comprehensive test coverage for all functionality</li>
+            </ul>
+        </div>
+        
+        <div class="legend">
+            <h4>Relationships:</h4>
+            <p>• Graph → GraphMCPServer (dependency/usage)</p>
+            <p>• GraphMCPServer → Tests (testing relationships)</p>
+            <p><strong>Graph Properties:</strong> 5 vertices, 4 edges, density: 0.2</p>
+        </div>
+    </div>
+
+    <script>
+        // Class relationship data
+        const graphData = {
+            "nodes": [
+                {"id": "Graph", "name": "Graph", "category": "core"},
+                {"id": "GraphMCPServer", "name": "GraphMCPServer", "category": "server"},
+                {"id": "TestGraph", "name": "TestGraph", "category": "test"},
+                {"id": "TestCLI", "name": "TestCLI", "category": "test"},
+                {"id": "TestIntegration", "name": "TestIntegration", "category": "test"}
+            ],
+            "links": [
+                {"source": "Graph", "target": "GraphMCPServer", "weight": 1},
+                {"source": "GraphMCPServer", "target": "TestGraph", "weight": 1},
+                {"source": "GraphMCPServer", "target": "TestCLI", "weight": 1},
+                {"source": "GraphMCPServer", "target": "TestIntegration", "weight": 1}
+            ]
+        };
+
+        // Set up the visualization
+        const width = 1160;
+        const height = 600;
+
+        const svg = d3.select("#graph")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+        // Define arrow marker
+        svg.append("defs").append("marker")
+            .attr("id", "arrowhead")
+            .attr("viewBox", "0 -5 10 10")
+            .attr("refX", 25)
+            .attr("refY", 0)
+            .attr("markerWidth", 6)
+            .attr("markerHeight", 6)
+            .attr("orient", "auto")
+            .append("path")
+            .attr("d", "M0,-5L10,0L0,5")
+            .attr("fill", "#666");
+
+        // Color scale for different node types
+        const color = d3.scaleOrdinal()
+            .domain(["core", "server", "test"])
+            .range(["#ff6b6b", "#4ecdc4", "#45b7d1"]);
+
+        // Create force simulation
+        const simulation = d3.forceSimulation(graphData.nodes)
+            .force("link", d3.forceLink(graphData.links).id(d => d.id).distance(150))
+            .force("charge", d3.forceManyBody().strength(-300))
+            .force("center", d3.forceCenter(width / 2, height / 2))
+            .force("collision", d3.forceCollide().radius(30));
+
+        // Create links
+        const link = svg.append("g")
+            .selectAll("line")
+            .data(graphData.links)
+            .enter().append("line")
+            .attr("class", "link");
+
+        // Create nodes
+        const node = svg.append("g")
+            .selectAll("circle")
+            .data(graphData.nodes)
+            .enter().append("circle")
+            .attr("class", "node")
+            .attr("r", 20)
+            .attr("fill", d => color(d.category))
+            .call(d3.drag()
+                .on("start", dragstarted)
+                .on("drag", dragged)
+                .on("end", dragended));
+
+        // Add labels
+        const label = svg.append("g")
+            .selectAll("text")
+            .data(graphData.nodes)
+            .enter().append("text")
+            .attr("class", "node-label")
+            .text(d => d.name);
+
+        // Update positions on simulation tick
+        simulation.on("tick", () => {
+            link
+                .attr("x1", d => d.source.x)
+                .attr("y1", d => d.source.y)
+                .attr("x2", d => d.target.x)
+                .attr("y2", d => d.target.y);
+
+            node
+                .attr("cx", d => d.x)
+                .attr("cy", d => d.y);
+
+            label
+                .attr("x", d => d.x)
+                .attr("y", d => d.y);
+        });
+
+        // Drag functions
+        function dragstarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+
+        function dragended(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+
+        // Add node hover effects
+        node.on("mouseover", function(event, d) {
+            d3.select(this).attr("r", 25);
+        }).on("mouseout", function(event, d) {
+            d3.select(this).attr("r", 20);
+        });
+    </script>
+</body>
+</html>

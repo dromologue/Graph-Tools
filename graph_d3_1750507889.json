@@ -1,0 +1,51 @@
+{
+  "nodes": [
+    {
+      "id": "Graph",
+      "name": "Graph",
+      "category": "default"
+    },
+    {
+      "id": "GraphMCPServer",
+      "name": "GraphMCPServer",
+      "category": "default"
+    },
+    {
+      "id": "TestGraph",
+      "name": "TestGraph",
+      "category": "default"
+    },
+    {
+      "id": "TestCLI",
+      "name": "TestCLI",
+      "category": "default"
+    },
+    {
+      "id": "TestIntegration",
+      "name": "TestIntegration",
+      "category": "default"
+    }
+  ],
+  "links": [
+    {
+      "source": "Graph",
+      "target": "GraphMCPServer",
+      "weight": 1
+    },
+    {
+      "source": "GraphMCPServer",
+      "target": "TestGraph",
+      "weight": 1
+    },
+    {
+      "source": "GraphMCPServer",
+      "target": "TestCLI",
+      "weight": 1
+    },
+    {
+      "source": "GraphMCPServer",
+      "target": "TestIntegration",
+      "weight": 1
+    }
+  ]
+}
