@@ -43,9 +43,11 @@
             border-bottom: 1px solid #4a5f7a;
             padding-bottom: 10px;
             width: 100%;
-            display: flex;
-            flex-direction: column;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2px;
             align-items: center;
+            justify-items: center;
         }
         
         .tool-group:last-child {
@@ -54,19 +56,19 @@
         }
         
         .tool-btn {
-            width: 60px;
-            height: 40px;
+            width: 35px;
+            height: 35px;
             background: rgba(255,255,255,0.1);
             border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 8px;
+            border-radius: 6px;
             color: white;
-            font-size: 10px;
+            font-size: 9px;
             font-weight: 600;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            margin: 3px 0;
+            margin: 1px;
             transition: all 0.3s ease;
             position: relative;
             text-align: center;
@@ -426,7 +428,6 @@
         <div class="tool-group">
             <div class="tool-btn" onclick="focusNodeInput()" data-tooltip="Add Node (N)">Add</div>
             <div class="tool-btn" id="addEdgeBtn" onclick="addEdge()" data-tooltip="Add Edge (E)" disabled>Link</div>
-            <div class="tool-btn" onclick="loadSample()" data-tooltip="Load Sample Graph">Sample</div>
             <div class="tool-btn" onclick="loadJSON()" data-tooltip="Load JSON File">Load</div>
         </div>
         
