@@ -414,8 +414,9 @@
                     </div>
                 `;
                 
+                const vizUrl = result.visualizationUrl || '/visualizer';
                 html += `
-                    <a href="${result.visualizationUrl}" target="_blank" class="visualization-link">
+                    <a href="${vizUrl}" target="_blank" class="visualization-link">
                         Open Interactive Visualization
                     </a>
                 `;
