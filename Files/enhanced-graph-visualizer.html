@@ -448,7 +448,6 @@
         
         <!-- Layout Tools -->
         <div class="tool-group">
-            <div class="tool-btn" onclick="toggleLayoutPanel()" data-tooltip="Layout Controls">Layout</div>
             <div class="tool-btn" onclick="expandAll()" data-tooltip="Expand All Nodes">Expand</div>
             <div class="tool-btn" onclick="collapseAll()" data-tooltip="Collapse All Nodes">Collapse</div>
             <div class="tool-btn" onclick="resetLayout()" data-tooltip="Reset Layout">Reset</div>
@@ -598,10 +597,16 @@
         // Check if graph data was pre-loaded and update UI accordingly
         if (graphData.nodes && graphData.nodes.length > 0) {
             showStatus(`Graph loaded with ${graphData.nodes.length} nodes and ${graphData.links.length} links.`, "success");
-            // Update dropdown options again after a short delay to ensure DOM is ready
+            // Update dropdown options multiple times to ensure they populate
+            updateStartNodeOptions();
             setTimeout(() => {
                 updateStartNodeOptions();
+                console.log('Second dropdown update completed');
             }, 100);
+            setTimeout(() => {
+                updateStartNodeOptions();
+                console.log('Third dropdown update completed');
+            }, 500);
         } else {
             showStatus("Welcome! Start by adding nodes to create your graph.", "success");
         }
@@ -1874,6 +1879,9 @@
                     .attr("x", d => d.x)
                     .attr("y", d => d.y);
             });
+            
+            // Always update dropdowns when visualization changes
+            updateStartNodeOptions();
         }
 
         function handleNodeClick(event, d) {
@@ -1953,6 +1961,9 @@
             const fromSelect = document.getElementById('fromNode');
             const toSelect = document.getElementById('toNode');
             const collapseSelect = document.getElementById('collapseNode');
+            
+            // Debug logging
+            console.log('updateStartNodeOptions called, nodes:', graphData.nodes.length);
             
             // Clear existing options
             startSelect.innerHTML = '<option value="">Select node...</option>';
