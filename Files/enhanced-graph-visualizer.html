@@ -138,6 +138,16 @@
             stroke: #388e3c !important;
             stroke-width: 4px !important;
         }
+        .node.end-node {
+            fill: #ef5350 !important;
+            stroke: #c62828 !important;
+            stroke-width: 4px !important;
+        }
+        .node.path-intermediate {
+            fill: #ffa726 !important;
+            stroke: #f57c00 !important;
+            stroke-width: 3px !important;
+        }
         .link {
             stroke: #999;
             stroke-opacity: 0.8;
@@ -298,6 +308,17 @@
                     <button class="secondary" onclick="showNeighbors()" id="neighborsBtn" disabled>Show Neighbors</button>
                 </div>
                 <div class="control-group">
+                    <label for="fromNode">From:</label>
+                    <select id="fromNode">
+                        <option value="">Select from node...</option>
+                    </select>
+                    <label for="toNode">To:</label>
+                    <select id="toNode">
+                        <option value="">Select to node...</option>
+                    </select>
+                    <button class="secondary" onclick="findPath()" id="pathBtn" disabled>Find Path</button>
+                </div>
+                <div class="control-group">
                     <button onclick="clearHighlights()">Clear Highlights</button>
                     <label for="exportFilename">Export as:</label>
                     <input type="text" id="exportFilename" placeholder="graph_matrix" value="graph_matrix">
@@ -326,6 +347,9 @@
                     </div>
                     <div class="legend-item">
                         <span class="legend-color" style="background: #66bb6a;"></span>Start Node
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: #ef5350;"></span>End Node
                     </div>
                     <div class="legend-item">
                         <span class="legend-color" style="background: #ffa726;"></span>Path Node
@@ -631,6 +655,112 @@
             showOperationResults("Neighbors", neighbors, startNodeId);
         }
 
+        function findPath() {
+            const fromNodeId = document.getElementById('fromNode').value;
+            const toNodeId = document.getElementById('toNode').value;
+            
+            if (!fromNodeId || !toNodeId) {
+                showStatus("Please select both from and to nodes.", "warning");
+                return;
+            }
+            
+            if (fromNodeId === toNodeId) {
+                showStatus("From and to nodes cannot be the same.", "warning");
+                return;
+            }
+            
+            clearHighlights();
+            
+            // Find shortest path using BFS
+            const path = findShortestPath(fromNodeId, toNodeId);
+            
+            if (path.length === 0) {
+                showStatus(`No path found between ${fromNodeId} and ${toNodeId}.`, "error");
+                showOperationResults("Path Finding", [], fromNodeId);
+                return;
+            }
+            
+            // Highlight the path
+            highlightPathBetweenNodes(path, fromNodeId, toNodeId);
+            showOperationResults("Shortest Path", path, fromNodeId, toNodeId);
+            showStatus(`Path found: ${path.join(' → ')}`, "success");
+        }
+        
+        function findShortestPath(start, end) {
+            const visited = new Set();
+            const queue = [{node: start, path: [start]}];
+            
+            while (queue.length > 0) {
+                const {node, path} = queue.shift();
+                
+                if (node === end) {
+                    return path;
+                }
+                
+                if (visited.has(node)) {
+                    continue;
+                }
+                
+                visited.add(node);
+                
+                // Find all neighbors (both outgoing and incoming edges for undirected behavior)
+                const neighbors = new Set();
+                
+                // Outgoing edges
+                graphData.links.forEach(l => {
+                    if ((l.source.id || l.source) === node) {
+                        neighbors.add(l.target.id || l.target);
+                    }
+                    // Incoming edges (treat as undirected)
+                    if ((l.target.id || l.target) === node) {
+                        neighbors.add(l.source.id || l.source);
+                    }
+                });
+                
+                for (const neighbor of neighbors) {
+                    if (!visited.has(neighbor)) {
+                        queue.push({
+                            node: neighbor,
+                            path: [...path, neighbor]
+                        });
+                    }
+                }
+            }
+            
+            return []; // No path found
+        }
+        
+        function highlightPathBetweenNodes(path, fromNode, toNode) {
+            // Clear all previous highlights
+            node.classed("highlighted", false)
+                .classed("start-node", false)
+                .classed("end-node", false)
+                .classed("path-node", false)
+                .classed("path-intermediate", false);
+                
+            link.classed("highlighted", false)
+                .classed("path-link", false);
+            
+            // Highlight nodes in the path
+            node.classed("start-node", d => d.id === fromNode)
+                .classed("end-node", d => d.id === toNode)
+                .classed("path-intermediate", d => path.includes(d.id) && d.id !== fromNode && d.id !== toNode);
+            
+            // Highlight edges in the path
+            for (let i = 0; i < path.length - 1; i++) {
+                const sourceId = path[i];
+                const targetId = path[i + 1];
+                
+                link.classed("path-link", l => {
+                    const linkSource = l.source.id || l.source;
+                    const linkTarget = l.target.id || l.target;
+                    
+                    return (linkSource === sourceId && linkTarget === targetId) ||
+                           (linkSource === targetId && linkTarget === sourceId); // Handle undirected
+                });
+            }
+        }
+
         function highlightPath(path, startNodeId) {
             // Clear all previous highlights
             node.classed("highlighted", false)
@@ -674,27 +804,47 @@
         function clearHighlights() {
             node.classed("highlighted", false)
                 .classed("start-node", false)
+                .classed("end-node", false)
                 .classed("path-node", false)
+                .classed("path-intermediate", false)
                 .classed("selected", false);
             link.classed("highlighted", false)
                 .classed("path-link", false);
         }
 
-        function showOperationResults(operation, results, startNode) {
+        function showOperationResults(operation, results, startNode, endNode = null) {
             const resultsDiv = document.getElementById('operationResults');
-            resultsDiv.innerHTML = `
-                <h4>${operation} Results</h4>
-                <p><strong>Start Node:</strong> ${startNode}</p>
-                <p><strong>Result:</strong> ${results.join(' → ')}</p>
-                <p><strong>Nodes Visited:</strong> ${results.length}</p>
-                <div style="margin-top: 10px;">
-                    ${results.map((node, i) => `
-                        <div class="result-item">
-                            Step ${i + 1}: ${node}
-                        </div>
-                    `).join('')}
-                </div>
-            `;
+            
+            if (operation === "Shortest Path") {
+                resultsDiv.innerHTML = `
+                    <h4>${operation} Results</h4>
+                    <p><strong>From:</strong> ${startNode}</p>
+                    <p><strong>To:</strong> ${endNode}</p>
+                    <p><strong>Path:</strong> ${results.join(' → ')}</p>
+                    <p><strong>Path Length:</strong> ${results.length} nodes (${results.length - 1} edges)</p>
+                    <div style="margin-top: 10px;">
+                        ${results.map((node, i) => `
+                            <div class="result-item">
+                                Step ${i + 1}: ${node}${i === 0 ? ' (start)' : i === results.length - 1 ? ' (end)' : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            } else {
+                resultsDiv.innerHTML = `
+                    <h4>${operation} Results</h4>
+                    <p><strong>Start Node:</strong> ${startNode}</p>
+                    <p><strong>Result:</strong> ${results.join(' → ')}</p>
+                    <p><strong>Nodes Visited:</strong> ${results.length}</p>
+                    <div style="margin-top: 10px;">
+                        ${results.map((node, i) => `
+                            <div class="result-item">
+                                Step ${i + 1}: ${node}
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
         }
 
         function clearOperationResults() {
@@ -915,14 +1065,34 @@
         }
 
         function updateStartNodeOptions() {
-            const select = document.getElementById('startNode');
-            select.innerHTML = '<option value="">Select node...</option>';
+            const startSelect = document.getElementById('startNode');
+            const fromSelect = document.getElementById('fromNode');
+            const toSelect = document.getElementById('toNode');
             
+            // Clear existing options
+            startSelect.innerHTML = '<option value="">Select node...</option>';
+            fromSelect.innerHTML = '<option value="">Select from node...</option>';
+            toSelect.innerHTML = '<option value="">Select to node...</option>';
+            
+            // Populate all dropdowns
             graphData.nodes.forEach(node => {
-                const option = document.createElement('option');
-                option.value = node.id;
-                option.textContent = node.name;
-                select.appendChild(option);
+                // Start node dropdown
+                const startOption = document.createElement('option');
+                startOption.value = node.id;
+                startOption.textContent = node.name;
+                startSelect.appendChild(startOption);
+                
+                // From node dropdown
+                const fromOption = document.createElement('option');
+                fromOption.value = node.id;
+                fromOption.textContent = node.name;
+                fromSelect.appendChild(fromOption);
+                
+                // To node dropdown
+                const toOption = document.createElement('option');
+                toOption.value = node.id;
+                toOption.textContent = node.name;
+                toSelect.appendChild(toOption);
             });
             
             // Enable/disable operation buttons
@@ -930,6 +1100,108 @@
             document.getElementById('dfsBtn').disabled = !hasNodes;
             document.getElementById('bfsBtn').disabled = !hasNodes;
             document.getElementById('neighborsBtn').disabled = !hasNodes;
+            document.getElementById('pathBtn').disabled = !hasNodes;
+        }
+
+        function findPath() {
+            const fromNodeId = document.getElementById('fromNode').value;
+            const toNodeId = document.getElementById('toNode').value;
+            
+            if (!fromNodeId || !toNodeId) {
+                showStatus("Please select both from and to nodes.", "warning");
+                return;
+            }
+            
+            if (fromNodeId === toNodeId) {
+                showStatus("From and to nodes cannot be the same.", "warning");
+                return;
+            }
+            
+            clearHighlights();
+            const path = findShortestPath(fromNodeId, toNodeId);
+            
+            if (path.length === 0) {
+                showStatus(`No path found from ${fromNodeId} to ${toNodeId}`, "error");
+                return;
+            }
+            
+            highlightPathBetweenNodes(path, fromNodeId, toNodeId);
+            showOperationResults("Shortest Path", path, fromNodeId, toNodeId);
+        }
+
+        function findShortestPath(start, end) {
+            const visited = new Set();
+            const queue = [{node: start, path: [start]}];
+            
+            while (queue.length > 0) {
+                const {node, path} = queue.shift();
+                
+                if (node === end) {
+                    return path;
+                }
+                
+                if (visited.has(node)) {
+                    continue;
+                }
+                
+                visited.add(node);
+                
+                // Find all neighbors (both outgoing and incoming edges for undirected behavior)
+                const neighbors = new Set();
+                
+                // Outgoing edges
+                graphData.links.forEach(l => {
+                    if ((l.source.id || l.source) === node) {
+                        neighbors.add(l.target.id || l.target);
+                    }
+                    // Incoming edges (treat as undirected)
+                    if ((l.target.id || l.target) === node) {
+                        neighbors.add(l.source.id || l.source);
+                    }
+                });
+                
+                for (const neighbor of neighbors) {
+                    if (!visited.has(neighbor)) {
+                        queue.push({
+                            node: neighbor,
+                            path: [...path, neighbor]
+                        });
+                    }
+                }
+            }
+            
+            return []; // No path found
+        }
+
+        function highlightPathBetweenNodes(path, startNodeId, endNodeId) {
+            // Clear all previous highlights
+            node.classed("highlighted", false)
+                .classed("start-node", false)
+                .classed("end-node", false)
+                .classed("path-intermediate", false);
+                
+            link.classed("highlighted", false)
+                .classed("path-link", false);
+            
+            // Apply new highlights
+            node.classed("start-node", d => d.id === startNodeId)
+                .classed("end-node", d => d.id === endNodeId)
+                .classed("path-intermediate", d => 
+                    path.includes(d.id) && d.id !== startNodeId && d.id !== endNodeId);
+            
+            // Highlight edges in path order
+            for (let i = 0; i < path.length - 1; i++) {
+                const sourceId = path[i];
+                const targetId = path[i + 1];
+                
+                link.classed("path-link", l => {
+                    const linkSource = l.source.id || l.source;
+                    const linkTarget = l.target.id || l.target;
+                    // Check both directions for undirected graph
+                    return (linkSource === sourceId && linkTarget === targetId) ||
+                           (linkSource === targetId && linkTarget === sourceId);
+                });
+            }
         }
 
         function showStatus(message, type) {
