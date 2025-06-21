@@ -54,13 +54,14 @@
         }
         
         .tool-btn {
-            width: 50px;
-            height: 50px;
+            width: 60px;
+            height: 40px;
             background: rgba(255,255,255,0.1);
             border: 1px solid rgba(255,255,255,0.2);
             border-radius: 8px;
             color: white;
-            font-size: 20px;
+            font-size: 10px;
+            font-weight: 600;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -68,6 +69,8 @@
             margin: 3px 0;
             transition: all 0.3s ease;
             position: relative;
+            text-align: center;
+            line-height: 1;
         }
         
         .tool-btn:hover {
@@ -421,47 +424,47 @@
         
         <!-- Create Tools -->
         <div class="tool-group">
-            <div class="tool-btn" onclick="focusNodeInput()" data-tooltip="Add Node (N)">➕</div>
-            <div class="tool-btn" id="addEdgeBtn" onclick="addEdge()" data-tooltip="Add Edge (E)" disabled>🔗</div>
-            <div class="tool-btn" onclick="loadSample()" data-tooltip="Load Sample Graph">📝</div>
-            <div class="tool-btn" onclick="loadJSON()" data-tooltip="Load JSON File">📁</div>
+            <div class="tool-btn" onclick="focusNodeInput()" data-tooltip="Add Node (N)">Add</div>
+            <div class="tool-btn" id="addEdgeBtn" onclick="addEdge()" data-tooltip="Add Edge (E)" disabled>Link</div>
+            <div class="tool-btn" onclick="loadSample()" data-tooltip="Load Sample Graph">Sample</div>
+            <div class="tool-btn" onclick="loadJSON()" data-tooltip="Load JSON File">Load</div>
         </div>
         
         <!-- Algorithm Tools -->
         <div class="tool-group">
-            <div class="tool-btn" id="dfsBtn" onclick="runDFS()" data-tooltip="Run DFS Traversal" disabled>🌳</div>
-            <div class="tool-btn" id="bfsBtn" onclick="runBFS()" data-tooltip="Run BFS Traversal" disabled>🌊</div>
-            <div class="tool-btn" id="pathBtn" onclick="showPathDialog()" data-tooltip="Find Shortest Path" disabled>🎯</div>
+            <div class="tool-btn" id="dfsBtn" onclick="runDFS()" data-tooltip="Run DFS Traversal" disabled>DFS</div>
+            <div class="tool-btn" id="bfsBtn" onclick="runBFS()" data-tooltip="Run BFS Traversal" disabled>BFS</div>
+            <div class="tool-btn" id="pathBtn" onclick="showPathDialog()" data-tooltip="Find Shortest Path" disabled>Path</div>
         </div>
         
         <!-- Centrality Analysis -->
         <div class="tool-group">
-            <div class="tool-btn" id="degreeBtn" onclick="runDegreeCentrality()" data-tooltip="Degree Centrality" disabled>📊</div>
-            <div class="tool-btn" id="betweennessBtn" onclick="runBetweennessCentrality()" data-tooltip="Betweenness Centrality" disabled>🌉</div>
-            <div class="tool-btn" id="closenessBtn" onclick="runClosenessCentrality()" data-tooltip="Closeness Centrality" disabled>⚡</div>
-            <div class="tool-btn" id="eigenvectorBtn" onclick="runEigenvectorCentrality()" data-tooltip="Eigenvector Centrality" disabled>⭐</div>
+            <div class="tool-btn" id="degreeBtn" onclick="runDegreeCentrality()" data-tooltip="Degree Centrality" disabled>Degree</div>
+            <div class="tool-btn" id="betweennessBtn" onclick="runBetweennessCentrality()" data-tooltip="Betweenness Centrality" disabled>Between</div>
+            <div class="tool-btn" id="closenessBtn" onclick="runClosenessCentrality()" data-tooltip="Closeness Centrality" disabled>Close</div>
+            <div class="tool-btn" id="eigenvectorBtn" onclick="runEigenvectorCentrality()" data-tooltip="Eigenvector Centrality" disabled>Eigen</div>
         </div>
         
         <!-- Layout Tools -->
         <div class="tool-group">
-            <div class="tool-btn" onclick="toggleLayoutPanel()" data-tooltip="Layout Controls">🎛️</div>
-            <div class="tool-btn" onclick="expandAll()" data-tooltip="Expand All Nodes">📤</div>
-            <div class="tool-btn" onclick="collapseAll()" data-tooltip="Collapse All Nodes">📥</div>
-            <div class="tool-btn" onclick="resetLayout()" data-tooltip="Reset Layout">🔄</div>
+            <div class="tool-btn" onclick="toggleLayoutPanel()" data-tooltip="Layout Controls">Layout</div>
+            <div class="tool-btn" onclick="expandAll()" data-tooltip="Expand All Nodes">Expand</div>
+            <div class="tool-btn" onclick="collapseAll()" data-tooltip="Collapse All Nodes">Collapse</div>
+            <div class="tool-btn" onclick="resetLayout()" data-tooltip="Reset Layout">Reset</div>
         </div>
         
         <!-- View Tools -->
         <div class="tool-group">
-            <div class="tool-btn" onclick="clearHighlights()" data-tooltip="Clear Highlights">🧹</div>
-            <div class="tool-btn" onclick="clearCentralityVisualization()" data-tooltip="Clear Centrality">❌</div>
-            <div class="tool-btn" onclick="toggleResultsPanel()" data-tooltip="Toggle Results">📋</div>
+            <div class="tool-btn" onclick="clearHighlights()" data-tooltip="Clear Highlights">Clear</div>
+            <div class="tool-btn" onclick="clearCentralityVisualization()" data-tooltip="Clear Centrality">Clean</div>
+            <div class="tool-btn" onclick="toggleResultsPanel()" data-tooltip="Toggle Results">Results</div>
         </div>
         
         <!-- Export Tools -->
         <div class="tool-group">
-            <div class="tool-btn" onclick="exportGraph()" data-tooltip="Export CSV Matrix">💾</div>
-            <div class="tool-btn" onclick="exportJSON()" data-tooltip="Export JSON">📄</div>
-            <div class="tool-btn" onclick="clearGraph()" data-tooltip="Clear Graph">🗑️</div>
+            <div class="tool-btn" onclick="exportGraph()" data-tooltip="Export CSV Matrix">CSV</div>
+            <div class="tool-btn" onclick="exportJSON()" data-tooltip="Export JSON">JSON</div>
+            <div class="tool-btn" onclick="clearGraph()" data-tooltip="Clear Graph">Delete</div>
         </div>
     </div>
 
