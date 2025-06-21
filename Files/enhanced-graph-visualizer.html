@@ -594,7 +594,17 @@
         updateVisualization();
         updateStats();
         updateStartNodeOptions();
-        showStatus("Welcome! Start by adding nodes to create your graph.", "success");
+        
+        // Check if graph data was pre-loaded and update UI accordingly
+        if (graphData.nodes && graphData.nodes.length > 0) {
+            showStatus(`Graph loaded with ${graphData.nodes.length} nodes and ${graphData.links.length} links.`, "success");
+            // Update dropdown options again after a short delay to ensure DOM is ready
+            setTimeout(() => {
+                updateStartNodeOptions();
+            }, 100);
+        } else {
+            showStatus("Welcome! Start by adding nodes to create your graph.", "success");
+        }
 
         // New UI helper functions
         function focusNodeInput() {
