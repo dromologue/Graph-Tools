@@ -15,6 +15,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 app.use('/files', express.static('Files'));
 
+// Serve the enhanced visualizer as the main page
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'Files', 'enhanced-graph-visualizer.html'));
+});
+
 // File upload configuration
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
