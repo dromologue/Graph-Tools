@@ -354,9 +354,9 @@ npm run api</div>
                         Extracts relationships from structured data and generates graph visualizations
                     </div>
                     
-                    <h3>HTTP REQUEST EXAMPLE</h3>
+                    <h3>REMOTE HTTP REQUEST EXAMPLE</h3>
                     <div class="code-block">Method: POST
-URL: http://localhost:3001/api/analyze-relationships
+URL: https://mcp.dromologue.com/api/analyze-relationships
 Content-Type: application/json
 
 Request Body:
@@ -426,14 +426,14 @@ Files Generated:
                     <div class="code-block">Step 1: Open terminal or command prompt
 
 Step 2: Run this curl command
-curl -X POST http://localhost:3001/api/analyze-relationships
+curl -X POST https://mcp.dromologue.com/api/analyze-relationships
 
 Step 3: Add the Content-Type header
-curl -X POST http://localhost:3001/api/analyze-relationships \
+curl -X POST https://mcp.dromologue.com/api/analyze-relationships \
   -H "Content-Type: application/json"
 
 Step 4: Add the data payload
-curl -X POST http://localhost:3001/api/analyze-relationships \
+curl -X POST https://mcp.dromologue.com/api/analyze-relationships \
   -H "Content-Type: application/json" \
   -d '{
     "data": [
@@ -465,9 +465,9 @@ curl -X POST http://localhost:3001/api/analyze-relationships \
                         Creates adjacency matrix from predefined relationship pairs
                     </div>
                     
-                    <h3>HTTP REQUEST EXAMPLE</h3>
+                    <h3>REMOTE HTTP REQUEST EXAMPLE</h3>
                     <div class="code-block">Method: POST
-URL: http://localhost:3001/api/create-adjacency-matrix
+URL: https://mcp.dromologue.com/api/create-adjacency-matrix
 Content-Type: application/json
 
 Request Body:
@@ -665,8 +665,8 @@ Step 2: Import required modules
 import requests
 import json
 
-Step 3: Define the API endpoint
-api_url = "http://localhost:3001/api/analyze-relationships"
+Step 3: Define the remote API endpoint
+api_url = "https://mcp.dromologue.com/api/analyze-relationships"
 
 Step 4: Prepare your data
 data = {
@@ -710,8 +710,8 @@ npm install axios
 Step 2: Import axios module
 const axios = require('axios');
 
-Step 3: Define the API endpoint
-const apiUrl = 'http://localhost:3001/api/analyze-relationships';
+Step 3: Define the remote API endpoint
+const apiUrl = 'https://mcp.dromologue.com/api/analyze-relationships';
 
 Step 4: Prepare your data
 const data = {
@@ -758,8 +758,8 @@ require 'net/http'
 require 'json'
 require 'uri'
 
-Step 2: Define the API endpoint
-api_url = 'http://localhost:3001/api/analyze-relationships'
+Step 2: Define the remote API endpoint
+api_url = 'https://mcp.dromologue.com/api/analyze-relationships'
 
 Step 3: Prepare your data
 data = {
