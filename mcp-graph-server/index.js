@@ -10,13 +10,15 @@ import {
   ListResourcesRequestSchema,
   ReadResourceRequestSchema
 } from '@modelcontextprotocol/sdk/types.js';
-import { spawn } from 'child_process';
+import { spawn, exec } from 'child_process';
 import { readFile, writeFile, access, mkdir } from 'fs/promises';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { promisify } from 'util';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+const execAsync = promisify(exec);
 
 class GraphMCPServer {
   constructor() {
@@ -195,7 +197,11 @@ class GraphMCPServer {
       await writeFile(vertexFile, JSON.stringify(vertexArray));
 
       // Generate visualization using the enhanced template
-      const htmlFile = await this.generateVisualization(matrixFile, vertexArray);
+      const visualizationResult = await this.generateVisualization(matrixFile, vertexArray);
+
+      const openStatus = visualizationResult.opened ? 
+        '🚀 Visualization automatically opened in your browser!' : 
+        '📁 Visualization file created (manual opening required)';
 
       return {
         content: [
@@ -208,10 +214,13 @@ class GraphMCPServer {
 - Relationships found: ${relationships.length}
 - Graph density: ${(relationships.length / (vertexArray.length * (vertexArray.length - 1)) || 0).toFixed(3)}
 
-📁 Files Generated:
+📁 Unique Files Generated:
 - Matrix: ${matrixFile}
 - Vertices: ${vertexFile}
-- Interactive Visualization: ${htmlFile}
+- Graph Data: ${visualizationResult.jsonFilename}
+- Interactive Visualization: ${visualizationResult.htmlFilename}
+
+${openStatus}
 
 🚀 Enhanced Interactive Visualization Features:
 ✅ Real-time DFS/BFS/Neighbors operations with visual highlighting
@@ -219,8 +228,6 @@ class GraphMCPServer {
 ✅ Step-by-step algorithm results display
 ✅ Graph statistics and color-coded legend
 ✅ Adjacency matrix export functionality
-
-Open the HTML file in your browser to explore the graph interactively!
 
 Relationships found:
 ${relationships.map(r => `  ${r.from} → ${r.to} (weight: ${r.weight})`).join('\n')}`
@@ -267,7 +274,11 @@ ${relationships.map(r => `  ${r.from} → ${r.to} (weight: ${r.weight})`).join('
       await writeFile(vertexFile, JSON.stringify(vertices));
 
       // Generate visualization
-      const htmlFile = await this.generateVisualization(matrixFile, vertices);
+      const visualizationResult = await this.generateVisualization(matrixFile, vertices);
+
+      const openStatus = visualizationResult.opened ? 
+        '🚀 Visualization automatically opened in your browser!' : 
+        '📁 Visualization file created (manual opening required)';
 
       return {
         content: [
@@ -280,13 +291,15 @@ ${relationships.map(r => `  ${r.from} → ${r.to} (weight: ${r.weight})`).join('
 - Vertices: ${vertices.join(', ')}
 - Edges: ${relationships.length}
 
-📁 Files Generated:
+📁 Unique Files Generated:
 - Matrix: ${matrixFile}
 - Vertices: ${vertexFile}
-- Interactive Visualization: ${htmlFile}
+- Graph Data: ${visualizationResult.jsonFilename}
+- Interactive Visualization: ${visualizationResult.htmlFilename}
 
-🚀 The enhanced visualizer includes DFS/BFS highlighting and matrix export functionality!
-Open the HTML file to explore your graph interactively.`
+${openStatus}
+
+🚀 The enhanced visualizer includes DFS/BFS highlighting and matrix export functionality!`
           }
         ]
       };
@@ -295,15 +308,51 @@ Open the HTML file to explore your graph interactively.`
     }
   }
 
+  generateUniqueFilename(prefix, vertices, extension) {
+    const timestamp = Date.now();
+    const nodeCount = vertices ? vertices.length : 0;
+    const vertexSummary = vertices && vertices.length <= 4 ? 
+      `_${vertices.join('-')}` : 
+      `_${nodeCount}nodes`;
+    
+    return `${prefix}_${timestamp}${vertexSummary}.${extension}`;
+  }
+
+  async openVisualization(htmlFile) {
+    try {
+      const platform = process.platform;
+      let command;
+      
+      if (platform === 'darwin') {
+        command = `open "${htmlFile}"`;
+      } else if (platform === 'win32') {
+        command = `start "${htmlFile}"`;
+      } else if (platform === 'linux') {
+        command = `xdg-open "${htmlFile}"`;
+      }
+      
+      if (command) {
+        console.log(`Opening visualization: ${htmlFile}`);
+        await execAsync(command);
+        return true;
+      }
+    } catch (error) {
+      console.warn(`Could not auto-open visualization: ${error.message}`);
+    }
+    return false;
+  }
+
   async generateVisualization(matrixFile, vertices) {
     try {
       // Ensure Files directory exists
       await mkdir(this.filesDir, { recursive: true });
       
-      // Use the CLI to generate JSON data
-      const timestamp = Date.now();
-      const jsonFile = join(this.filesDir, `graph_${timestamp}.json`);
-      const htmlFile = join(this.filesDir, `visualization_${timestamp}.html`);
+      // Generate unique, descriptive filenames
+      const jsonFilename = this.generateUniqueFilename('graph_data', vertices, 'json');
+      const htmlFilename = this.generateUniqueFilename('visualization', vertices, 'html');
+      
+      const jsonFile = join(this.filesDir, jsonFilename);
+      const htmlFile = join(this.filesDir, htmlFilename);
       
       // Generate JSON using CLI
       const vertexArgs = vertices ? `-v "${vertices.join(',')}"` : '';
@@ -359,7 +408,16 @@ Open the HTML file to explore your graph interactively.`
       // Write the complete HTML file
       await writeFile(htmlFile, template);
       
-      return htmlFile;
+      // Automatically open the visualization
+      const opened = await this.openVisualization(htmlFile);
+      
+      return {
+        htmlFile,
+        htmlFilename,
+        jsonFile,
+        jsonFilename,
+        opened
+      };
     } catch (error) {
       console.error('Visualization generation error:', error);
       throw new Error(`Failed to generate visualization: ${error.message}`);
