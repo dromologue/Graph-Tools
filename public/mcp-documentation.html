@@ -751,6 +751,64 @@ async function analyzeRelationships() {
 
 Step 6: Call the function
 analyzeRelationships();</div>
+
+                <h3>RUBY HTTP CLIENT</h3>
+                <div class="code-block">Step 1: Install the net/http library (included in Ruby standard library)
+require 'net/http'
+require 'json'
+require 'uri'
+
+Step 2: Define the API endpoint
+api_url = 'http://localhost:3001/api/analyze-relationships'
+
+Step 3: Prepare your data
+data = {
+  data: [
+    {
+      id: 'Alice',
+      friends: ['Bob', 'Carol']
+    },
+    {
+      id: 'Bob', 
+      friends: ['Alice', 'David']
+    },
+    {
+      id: 'Carol',
+      friends: ['Alice']
+    },
+    {
+      id: 'David',
+      friends: ['Bob']
+    }
+  ],
+  relationship_fields: ['friends'],
+  node_label_field: 'id'
+}
+
+Step 4: Create HTTP request
+uri = URI(api_url)
+http = Net::HTTP.new(uri.host, uri.port)
+request = Net::HTTP::Post.new(uri)
+
+Step 5: Set headers and body
+request['Content-Type'] = 'application/json'
+request.body = data.to_json
+
+Step 6: Make the API request and handle response
+begin
+  response = http.request(request)
+  
+  if response.code == '200'
+    result = JSON.parse(response.body)
+    puts "Success: #{result['success']}"
+    puts "Data: #{result['data']}"
+  else
+    error = JSON.parse(response.body)
+    puts "Error: #{error['error']}"
+  end
+rescue => e
+  puts "Network error: #{e.message}"
+end</div>
             </div>
         </div>
         
