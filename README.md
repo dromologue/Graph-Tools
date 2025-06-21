@@ -32,7 +32,7 @@ A comprehensive Ruby-based graph analysis toolkit with web visualizations and MC
 
 ### Setup
 ```bash
-git clone https://github.com/yourusername/Graph-Tools.git
+git clone https://github.com/dromologue/Graph-Tools.git
 cd Graph-Tools
 
 # For local CLI usage
