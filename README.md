@@ -34,11 +34,29 @@ A comprehensive Ruby-based graph analysis toolkit with web visualizations and Cl
 git clone https://github.com/yourusername/Graph-Tools.git
 cd Graph-Tools
 
+# For local CLI usage
 # Install MCP server dependencies
 cd mcp-graph-server
 npm install
 cd ..
+
+# For web application
+npm install
 ```
+
+### 🌐 Web Application
+Deploy to Heroku for a full web interface:
+
+```bash
+# Quick deploy to Heroku
+heroku create your-graph-tools-app
+heroku buildpacks:add heroku/ruby
+heroku buildpacks:add heroku/nodejs
+git push heroku main
+heroku open
+```
+
+See [HEROKU_DEPLOY.md](HEROKU_DEPLOY.md) for detailed deployment instructions.
 
 ## 🔧 Usage
 
@@ -63,10 +81,17 @@ ruby graph_cli.rb -j output.json matrix.csv
 
 ### Interactive Visualizer
 
+**Local Usage:**
 1. Open `Files/enhanced-graph-visualizer.html` in your browser
 2. Load sample data or create your own graph
 3. Run DFS/BFS operations with visual highlighting
 4. Export matrices with custom filenames
+
+**Web Application:**
+1. Run `npm start` and visit `http://localhost:3000`
+2. Upload matrix files via drag-and-drop
+3. Try sample data for quick testing
+4. Get real-time analysis results
 
 ### Claude Desktop Integration
 

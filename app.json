@@ -1,0 +1,28 @@
+{
+  "name": "Graph Tools",
+  "description": "Interactive Graph Analysis Toolkit with Ruby backend and D3.js visualizations",
+  "keywords": ["ruby", "nodejs", "graph", "visualization", "d3js", "algorithms"],
+  "website": "https://github.com/yourusername/Graph-Tools",
+  "repository": "https://github.com/yourusername/Graph-Tools",
+  "buildpacks": [
+    {
+      "url": "heroku/ruby"
+    },
+    {
+      "url": "heroku/nodejs"
+    }
+  ],
+  "env": {
+    "NODE_ENV": {
+      "description": "Node.js environment",
+      "value": "production"
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "eco"
+    }
+  },
+  "stack": "heroku-22"
+}

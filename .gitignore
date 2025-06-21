@@ -15,6 +15,10 @@ Files/graph_*.json
 Files/graph_d3_*.json
 Files/visualization_*.html
 
+# Web application uploads and temp files
+uploads/
+*.tmp
+
 # Temporary files
 *.tmp
 *.temp
