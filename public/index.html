@@ -49,32 +49,6 @@
             margin-bottom: 30px;
         }
         
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
-            margin-bottom: 40px;
-        }
-        
-        .feature-card {
-            background: #f8f9fa;
-            padding: 25px;
-            border-radius: 10px;
-            text-align: center;
-            border: 2px solid transparent;
-            transition: all 0.3s ease;
-        }
-        
-        .feature-card:hover {
-            border-color: #667eea;
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-        
-        .feature-icon {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-        }
         
         .upload-section {
             background: #e3f2fd;
@@ -266,42 +240,19 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔗 Graph Tools</h1>
+            <h1>Graph Tools</h1>
             <p>Interactive Graph Analysis Toolkit</p>
         </div>
         
         <div class="main-content">
-            <div class="features">
-                <div class="feature-card">
-                    <div class="feature-icon">📊</div>
-                    <h3>Matrix Analysis</h3>
-                    <p>Upload CSV, JSON, or TXT adjacency matrices for comprehensive graph analysis</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🔍</div>
-                    <h3>Graph Algorithms</h3>
-                    <p>Run DFS, BFS, and neighbor analysis with visual highlighting</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🎨</div>
-                    <h3>Interactive Visualization</h3>
-                    <p>D3.js force-directed layouts with real-time algorithm demonstrations</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">⚡</div>
-                    <h3>Instant Results</h3>
-                    <p>Get immediate analysis results and beautiful visualizations</p>
-                </div>
-            </div>
-            
             <div class="upload-section">
-                <h2>🚀 Analyze Your Graph</h2>
+                <h2>Analyze Your Graph</h2>
                 <p style="margin-bottom: 20px;">Upload an adjacency matrix file or try our sample data</p>
                 
                 <form id="analysisForm" enctype="multipart/form-data">
                     <div class="upload-area" onclick="document.getElementById('matrixFile').click()">
                         <div id="uploadText">
-                            <strong>📁 Click to upload matrix file</strong><br>
+                            <strong>Click to upload matrix file</strong><br>
                             <span>Supports CSV, JSON, TXT formats</span>
                         </div>
                         <input type="file" id="matrixFile" name="matrix" accept=".csv,.json,.txt" style="display: none;" onchange="handleFileSelect(this)">
@@ -328,12 +279,12 @@
                     </div>
                     
                     <div style="text-align: center; margin-top: 20px;">
-                        <button type="submit">🔍 Analyze Graph</button>
-                        <button type="button" class="secondary" onclick="openVisualizer()">🎨 Interactive Graph Visualizer</button>
+                        <button type="submit">Analyze Graph</button>
+                        <button type="button" class="secondary" onclick="openVisualizer()">Interactive Graph Visualizer</button>
                         <br>
-                        <button type="button" class="sample" onclick="generateSample('social')">👥 Social Network Sample</button>
-                        <button type="button" class="sample" onclick="generateSample('dependency')">🔗 Dependency Graph Sample</button>
-                        <button type="button" class="sample" onclick="generateSample('basic')">⭐ Basic Graph Sample</button>
+                        <button type="button" class="sample" onclick="generateSample('social')">Social Network Sample</button>
+                        <button type="button" class="sample" onclick="generateSample('dependency')">Dependency Graph Sample</button>
+                        <button type="button" class="sample" onclick="generateSample('basic')">Basic Graph Sample</button>
                     </div>
                 </form>
             </div>
@@ -344,13 +295,13 @@
             </div>
             
             <div class="results" id="results">
-                <h3>📈 Analysis Results</h3>
+                <h3>Analysis Results</h3>
                 <div id="resultsContent"></div>
             </div>
         </div>
         
         <div class="footer">
-            <p>🔗 Graph Tools - Built with Ruby, Node.js, and D3.js</p>
+            <p>Graph Tools - Built with Ruby, Node.js, and D3.js</p>
             <p>Upload your adjacency matrix and explore your data through interactive visualizations</p>
         </div>
     </div>
@@ -362,7 +313,7 @@
             if (input.files.length > 0) {
                 selectedFile = input.files[0];
                 document.getElementById('uploadText').innerHTML = 
-                    `<strong>✅ ${selectedFile.name}</strong><br><span>File selected for analysis</span>`;
+                    `<strong>${selectedFile.name}</strong><br><span>File selected for analysis</span>`;
             }
         }
         
@@ -421,7 +372,7 @@
                     // Update form with sample data
                     document.getElementById('vertices').value = result.vertices.join(',');
                     document.getElementById('uploadText').innerHTML = 
-                        `<strong>✅ ${type} sample loaded</strong><br><span>Ready for analysis</span>`;
+                        `<strong>${type} sample loaded</strong><br><span>Ready for analysis</span>`;
                     selectedFile = 'sample'; // Flag that we have sample data
                     
                     showResults(result);
@@ -450,14 +401,14 @@
             let html = '';
             
             if (result.output) {
-                html += '<div class="success">✅ Analysis completed successfully!</div>';
+                html += '<div class="success">Analysis completed successfully!</div>';
                 html += '<pre>' + result.output + '</pre>';
             }
             
             if (result.graphData) {
                 html += `
                     <div style="margin: 20px 0;">
-                        <h4>📊 Graph Data Summary:</h4>
+                        <h4>Graph Data Summary:</h4>
                         <p><strong>Nodes:</strong> ${result.graphData.nodes ? result.graphData.nodes.length : 0}</p>
                         <p><strong>Edges:</strong> ${result.graphData.edges ? result.graphData.edges.length : (result.graphData.links ? result.graphData.links.length : 0)}</p>
                     </div>
@@ -465,7 +416,7 @@
                 
                 html += `
                     <a href="${result.visualizationUrl}" target="_blank" class="visualization-link">
-                        🎨 Open Interactive Visualization
+                        Open Interactive Visualization
                     </a>
                 `;
             }
@@ -473,7 +424,7 @@
             if (result.visualizationUrl) {
                 html += `
                     <div style="margin: 20px 0;">
-                        <p>💡 <strong>Auto-loaded!</strong> Your graph data will be automatically displayed in the visualizer</p>
+                        <p><strong>Auto-loaded!</strong> Your graph data will be automatically displayed in the visualizer</p>
                     </div>
                 `;
             }
@@ -486,7 +437,7 @@
             const resultsDiv = document.getElementById('results');
             const contentDiv = document.getElementById('resultsContent');
             
-            contentDiv.innerHTML = `<div class="error">❌ ${message}</div>`;
+            contentDiv.innerHTML = `<div class="error">Error: ${message}</div>`;
             resultsDiv.classList.add('show');
         }
         
@@ -514,7 +465,7 @@
             if (files.length > 0) {
                 selectedFile = files[0];
                 document.getElementById('uploadText').innerHTML = 
-                    `<strong>✅ ${selectedFile.name}</strong><br><span>File selected for analysis</span>`;
+                    `<strong>${selectedFile.name}</strong><br><span>File selected for analysis</span>`;
             }
         });
     </script>
